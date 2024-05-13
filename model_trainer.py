@@ -39,7 +39,7 @@ class ModelTrainer:
         val = dataset.validation_dataset() \
             .batch(batch_size) \
             .prefetch(tf.data.experimental.AUTOTUNE)
-
+        
         # TODO: check if this works, make sure we're excluding the last layer from the student
         if self.pruning and self.distillation:
             raise NotImplementedError()

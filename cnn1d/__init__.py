@@ -1,0 +1,2 @@
+from .cnn1d_architecture import Cnn1DArchitecture
+from .cnn1d_search_space import Cnn1DSearchSpace

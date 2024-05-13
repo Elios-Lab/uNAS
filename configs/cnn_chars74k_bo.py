@@ -1,5 +1,5 @@
 import tensorflow_addons as tfa
-from tensorflow.keras.callbacks import LearningRateScheduler
+from keras.callbacks import LearningRateScheduler
 
 from config import TrainingConfig, BayesOptConfig, BoundConfig
 from dataset import Chars74K

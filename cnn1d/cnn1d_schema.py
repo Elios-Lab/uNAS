@@ -10,9 +10,9 @@ _SCHEMA = None
 
 def build_schema() -> Dict[str, ValueType]:
     """
-    Defines the search space. In this search space, we create CNN models that consist of:
-    * up to MAX_CONV_BLOCKS blocks of CNN layers (up to MAX_LAYERS_PER_CONV_BLOCK layers per each block, arranged in series or in parallel w/ prev block)
-    * each convolutional layer is either a 2D convolution, a 1x1 2D convolution or a 2D depthwise sep. convolution
+    Defines the search space. In this search space, we create 1D CNN models that consist of:
+    * up to MAX_CONV_BLOCKS blocks of 1D CNN layers (up to MAX_LAYERS_PER_CONV_BLOCK layers per each block, arranged in series or in parallel w/ prev block)
+    * each convolutional layer is either a 1D convolution, a 1x1 1D convolution or a 1D depthwise sep. convolution
     :returns Free search space variables, keyed by name.
     """
     keys = []
@@ -22,10 +22,10 @@ def build_schema() -> Dict[str, ValueType]:
         keys.append(Discrete(f"conv{c}-num-layers", bounds=(1, MAX_LAYERS_PER_CONV_BLOCK), can_be_optional=True))
         for i in range(MAX_LAYERS_PER_CONV_BLOCK):
             keys.extend([
-                Categorical(f"conv{c}-l{i}-type", values=["Conv2D", "1x1Conv2D", "DWConv2D"], can_be_optional=True),
+                Categorical(f"conv{c}-l{i}-type", values=["Conv1D", "1x1Conv1D", "DWConv1D"], can_be_optional=True),
                 Discrete(f"conv{c}-l{i}-ker-size", bounds=(3, 7), increment=2, can_be_optional=True),
                 Discrete(f"conv{c}-l{i}-filters", bounds=(1, 128), can_be_optional=True),
-                Boolean(f"conv{c}-l{i}-2x-stride", can_be_optional=True),
+                Boolean(f"conv{c}-l{i}-1x-stride", can_be_optional=True),
                 Boolean(f"conv{c}-l{i}-has-pre-pool", can_be_optional=True),
                 Boolean(f"conv{c}-l{i}-has-bn", can_be_optional=True),
                 Boolean(f"conv{c}-l{i}-has-relu", can_be_optional=True),

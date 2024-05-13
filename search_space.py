@@ -1,4 +1,4 @@
-from tensorflow.keras.models import Model
+from keras.models import Model
 from abc import ABC, abstractmethod
 from typing import List, Union, TypeVar, Dict
 from architecture import Architecture

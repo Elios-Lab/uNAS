@@ -10,7 +10,7 @@ from copy import deepcopy
 from architecture import Architecture
 from resource_models.graph import OperatorDesc
 from resource_models.models import peak_memory_usage, model_size, inference_latency, macs
-from resource_models.ops import DWConv2D, Conv2D, Pool, Dense
+from resource_models.ops import DWConv2D, Conv2D, Pool, Dense, Conv1D, DWConv1D, Pool1D
 from search_space import SearchSpace
 
 
@@ -26,8 +26,12 @@ def op_to_label(op: OperatorDesc):
     if isinstance(op, (DWConv2D, Conv2D)):
         # Including kernel size here helps, even though it's accounted for in layer mass
         info = {"kernel_size": op.kernel_size, "batch_norm": op.batch_norm, "activation": op.activation}
+    if isinstance(op, (Conv1D, DWConv1D)):
+        info = {"kernel_size": op.kernel_size, "batch_norm": op.batch_norm, "activation": op.activation}
     if isinstance(op, Pool):
         info = {"type": op.type}
+    if isinstance(op, Pool1D):
+        info = {"type": op.type} # , "pool_size": op.pool_size
     if isinstance(op, Dense):
         info = {"batch_norm": op.batch_norm, "activation": op.activation}
 
@@ -79,8 +83,11 @@ def all_possible_labels(conv_kernel_bounds=None, pool_types=None, activation_typ
            ["Add"] + \
            ["Dense|" + info for info in dense_layer_types] + \
            ["Pool|" + info for info in pool_layer_types] + \
+           ["Pool1D|" + info for info in pool_layer_types] + \
            ["Conv2D|" + info for info in conv_layer_types] + \
-           ["DWConv2D|" + info for info in conv_layer_types]
+           ["DWConv2D|" + info for info in conv_layer_types] + \
+           ["Conv1D|" + info for info in conv_layer_types] + \
+           ["DWConv1D|" + info for info in conv_layer_types]
 
 
 class NeuralNetworkWrapper(DFNeuralNetwork):
@@ -141,10 +148,11 @@ class NeuralNetworkWrapper(DFNeuralNetwork):
         non_proc_layer_mass = max(0.1 * sum(f for f in mass if f != -1), 100)  # according to Dragonfly
         self.layer_masses = np.array([(non_proc_layer_mass if f == -1 else f) for f in mass], dtype=np.float) / 1000
 
+        labels = all_possible_labels()
         super().__init__("unas-net",
                          layer_labels, conn_mat,
                          num_units_in_each_layer=units,
-                         all_layer_label_classes=all_possible_labels(),
+                         all_layer_label_classes=labels,
                          layer_label_similarities=None)
 
     def to_keras_model(self, space: SearchSpace, *args, **kwargs):

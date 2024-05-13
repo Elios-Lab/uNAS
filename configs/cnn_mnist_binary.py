@@ -1,6 +1,6 @@
 import tensorflow as tf
 import tensorflow_addons as tfa
-from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping
+from keras.callbacks import ReduceLROnPlateau, EarlyStopping
 
 from config import TrainingConfig, BayesOptConfig, BoundConfig
 from dataset import MNIST

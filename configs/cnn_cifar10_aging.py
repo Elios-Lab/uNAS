@@ -1,5 +1,5 @@
 import tensorflow_addons as tfa
-from tensorflow.keras.callbacks import ReduceLROnPlateau, LearningRateScheduler
+from keras.callbacks import ReduceLROnPlateau, LearningRateScheduler
 
 from config import TrainingConfig, AgingEvoConfig, BoundConfig
 from dataset import CIFAR10

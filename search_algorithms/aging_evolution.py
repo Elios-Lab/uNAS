@@ -92,7 +92,8 @@ class AgingEvoSearch:
         self.rounds = search_config.rounds
         self.sample_size = search_config.sample_size
         num_gpus = len(tf.config.experimental.list_physical_devices("GPU"))
-        self.max_parallel_evaluations = search_config.max_parallel_evaluations or num_gpus
+        self.num_gpus = num_gpus
+        self.max_parallel_evaluations = search_config.max_parallel_evaluations or num_gpus or 1 # Default to 1 worker
 
     def save_state(self, file):
         with open(file, "wb") as f:

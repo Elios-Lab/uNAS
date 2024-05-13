@@ -106,7 +106,7 @@ class Pool(OperatorDesc):
     def __call__(self, x: TensorDesc):
         super().__call__(x)
         assert len(x.shape) == 4
-        batch_size, h, w, in_channels = x.shape
+            batch_size, h, w, in_channels = x.shape
         pool_h, pool_w = self.pool_size
         assert pool_h <= h and pool_w <= w, f"Can't apply {self.pool_size} pooling to {x.shape}"
         output_shape = (batch_size, ceil(h / pool_h), ceil(w / pool_w), in_channels)
@@ -136,4 +136,86 @@ class Add(OperatorDesc):
             for i in range(len(output_shape)):
                 output_shape[i] = max(x.shape[i] for x in xs)
             output_shape = tuple(output_shape)
+        return self._produce_output(shape=output_shape)
+    
+
+
+# TEST
+    
+# working on operation for 1d CNN
+    
+class Conv1D(OperatorDesc):
+    """
+    1D Convolution
+    """
+    def __init__(self, filters: int, kernel_size: int, stride: int = 1, use_bias: bool = True,
+                 batch_norm: bool = False, activation: Optional[str] = None, padding: str = "valid",
+                 sparse_kernel_size: Optional[int] = None, name: str = None):
+        assert padding in ["valid", "same"]
+        super().__init__("conv1d" if name is None else name)
+        self.num_filters = filters
+        self.kernel_size = kernel_size
+        self.padding = padding
+        self.stride = stride
+        self.use_bias = use_bias
+        self.batch_norm = batch_norm
+        self.activation = activation
+        self.sparse_kernel_size = sparse_kernel_size
+
+    def __call__(self, x: TensorDesc):
+        super().__call__(x)
+        assert len(x.shape) == 3
+        batch_size, l, in_channels = x.shape
+        self._add_weight(shape=(self.kernel_size, in_channels, self.num_filters),
+                         suffix="weight", sparse_size=self.sparse_kernel_size)
+        if self.use_bias:
+            self._add_weight(shape=(self.num_filters, ), suffix="bias")
+        l_ = l if self.padding == "same" else l - self.kernel_size + 1
+        output_shape = (batch_size, ceil(l_ / self.stride), self.num_filters)
+        return self._produce_output(shape=output_shape)
+
+
+class DWConv1D(OperatorDesc):
+    """
+    Depthwise 1D Convolution (nb. does not include the 1x1 convolution that typically follows d/wise convolution).
+    """
+    def __init__(self, kernel_size: int, stride: int = 1, padding: str = "same", use_bias: bool = True,
+                 batch_norm: bool = False, activation: Optional[str] = None,
+                 sparse_kernel_size: Optional[int] = None, name: str = None):
+        assert padding in ["valid", "same"]
+        super().__init__("dw_conv1d" if name is None else name)
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.padding = padding
+        self.use_bias = use_bias
+        self.batch_norm = batch_norm
+        self.activation = activation
+        self.sparse_kernel_size = sparse_kernel_size
+
+    def __call__(self, x: TensorDesc):
+        super().__call__(x)
+        assert len(x.shape) == 3
+        batch_size, l, in_channels = x.shape
+        self._add_weight(shape=(self.kernel_size, in_channels, 1),
+                         suffix="weight", sparse_size=self.sparse_kernel_size)
+        if self.use_bias:
+            self._add_weight(shape=(in_channels, ), suffix="bias")
+        l_ = l if self.padding == "same" else l - self.kernel_size + 1
+        output_shape = (batch_size, ceil(l_ / self.stride), in_channels)
+        return self._produce_output(shape=output_shape)
+    
+
+
+class Pool1D(OperatorDesc):
+    def __init__(self, pool_size: int, type: str, name: str = None):
+        super().__init__("pool1d" if name is None else name)
+        self.pool_size = pool_size
+        self.type = type
+
+    def __call__(self, x: TensorDesc):
+        super().__call__(x)
+        assert len(x.shape) == 3
+        batch_size, l, in_channels = x.shape
+        assert self.pool_size <= l, f"Can't apply {self.pool_size} pooling to {x.shape}"
+        output_shape = (batch_size, ceil(l / self.pool_size), in_channels)
         return self._produce_output(shape=output_shape)

@@ -8,9 +8,9 @@ class MlpArchitecture(Architecture):
         self.architecture = architecture
 
     def to_keras_model(self, input_shape, num_classes, l2_reg=0.001, **kwargs):
-        from tensorflow.keras import Model
-        from tensorflow.keras.layers import Input, Flatten, Dense
-        from tensorflow.keras.regularizers import l2
+        from keras import Model
+        from keras.layers import Input, Flatten, Dense
+        from keras.regularizers import l2
 
         i = Input(shape=input_shape)
         x = Flatten()(i)

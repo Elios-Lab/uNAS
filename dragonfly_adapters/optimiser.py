@@ -80,8 +80,15 @@ class Optimiser(CPGPBandit):
         def process(qinfo):
             nn = qinfo.point[0]
             info = {"architecture": nn.arch, "test_error": nn.test_error}
-            for i, objective in enumerate(["val_error", "peak_memory_usage", "model_size", "macs"]):
-                info[objective] = -qinfo.val[i]
-            return info
+
+            info["val_error"] = qinfo.point[0].val_error
+            info["peak_memory_usage"] = qinfo.point[0].resource_features[0]
+            info["model_size"] = qinfo.point[0].resource_features[1]
+            info["macs"] = qinfo.point[0].resource_features[2]
+
+            #test fix
+            #for i, objective in enumerate(["val_error", "peak_memory_usage", "model_size", "macs"]):
+            #    info[objective] = -qinfo.val[i]
+            #return info
 
         return [process(p) for p in self.pareto_front_points]

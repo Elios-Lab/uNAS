@@ -1,5 +1,5 @@
 import tensorflow_addons as tfa
-from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping
+from keras.callbacks import ReduceLROnPlateau, EarlyStopping
 
 from config import TrainingConfig, BayesOptConfig, BoundConfig, PruningConfig, AgingEvoConfig
 from dataset import CIFAR10

@@ -1,8 +1,8 @@
 import tensorflow as tf
 from tensorflow_addons.optimizers import AdamW
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
-from tensorflow.keras.layers import Input, Dense, Conv2D, BatchNormalization, ReLU, GlobalAveragePooling2D, Dropout
-from tensorflow.keras.models import Model
+from keras.losses import SparseCategoricalCrossentropy
+from keras.layers import Input, Dense, Conv2D, BatchNormalization, ReLU, GlobalAveragePooling2D, Dropout
+from keras.models import Model
 
 from dataset import Chars74K
 

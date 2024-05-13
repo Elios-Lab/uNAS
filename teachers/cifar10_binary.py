@@ -1,9 +1,9 @@
 import tensorflow as tf
 from tensorflow_addons.optimizers import SGDW
-from tensorflow.keras.callbacks import LearningRateScheduler
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
-from tensorflow.keras import layers
-from tensorflow.keras.models import Model
+from keras.callbacks import LearningRateScheduler
+from keras.losses import SparseCategoricalCrossentropy
+from keras import layers
+from keras.models import Model
 
 from dataset import CIFAR10
 

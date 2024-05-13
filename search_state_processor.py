@@ -20,7 +20,7 @@ def compute_x_ticks(x_min, x_max):
 
 def is_pareto_efficient(points):
     points = np.asarray(points)
-    is_efficient = np.ones(points.shape[0], dtype=np.bool)
+    is_efficient = np.ones(points.shape[0], dtype=bool)
     for i, c in enumerate(points):
         if is_efficient[i]:
             is_efficient[is_efficient] = np.any(points[is_efficient] < c, axis=1)
@@ -33,14 +33,18 @@ def get_pareto_front(points):
     return [p for p, e in zip(points, eff_mask) if e]
 
 
-def plot_pareto_front(search_state_file, x_range=(0.0, 1.0), y_range=(0.0, 3e6), title=None,
+def plot_pareto_front(points, x_range=(0.0, 1.0), y_range=(0.0, 1e6), title=None,
                       output_file=None):
-    points = load_search_state_file(search_state_file)
+    #points = load_search_state_file(search_state_file)
     error = np.array([o[0] for o in points])
     pmu = np.array([o[1] for o in points])
     ms = np.array([o[2] for o in points])
     macs = np.array([o[3] for o in points])
     is_efficient = is_pareto_efficient(points)
+
+    result = []
+    for i, p in enumerate(points):
+        result.append({"error": p[0], "pmu": p[1], "ms": p[2], "macs": p[3], "is_efficient": is_efficient[i]})
 
     x_min, x_max = x_range
     y_min, y_max = y_range
@@ -56,7 +60,7 @@ def plot_pareto_front(search_state_file, x_range=(0.0, 1.0), y_range=(0.0, 3e6),
     ax.set_xticks(x_major_ticks, minor=False)
     ax.set_xlabel("Error rate")
     ax.set_ylabel("Resource usage (bytes)")
-    ax.set_yscale("log")
+    #ax.set_yscale("log")
     ax.set_title(title or "PMU, model size and MACs versus error rate")
     ax.xaxis.grid(True, which='both', linewidth=0.5, linestyle=":")
     ax.yaxis.grid(True, which='major', linewidth=0.5, linestyle=":")
@@ -68,14 +72,14 @@ def plot_pareto_front(search_state_file, x_range=(0.0, 1.0), y_range=(0.0, 3e6),
         color = [(r, g, b, a) for a in alpha]
         ax.scatter(x, y, marker="D", s=10, label=label, color=color)
 
-    # scatter(error, macs, color=colors[0], label="MACs",
-    #         alpha=(0.1 + 0.25 * is_efficient))
+    scatter(error, macs, color=colors[0], label="MACs",
+             alpha=(0.1 + 0.25 * is_efficient))
     scatter(error, pmu, color=colors[1], label="Peak memory usage",
             alpha=(0.1 + 0.25 * is_efficient))
-    # plt.hlines(np.mean(pmu), x_min, x_max, color=colors[1])
+    #plt.hlines(np.mean(pmu), x_min, x_max, color=colors[1])
     scatter(error, ms, color=colors[2], label="Model size",
             alpha=(0.1 + 0.25 * is_efficient))
-    # plt.hlines(np.mean(ms), x_min, x_max, color=colors[2])
+    #plt.hlines(np.mean(ms), x_min, x_max, color=colors[2])
     ax.legend(loc="upper right")
 
     for i, c in enumerate(colors[1:]):
@@ -89,9 +93,11 @@ def plot_pareto_front(search_state_file, x_range=(0.0, 1.0), y_range=(0.0, 3e6),
 
 
 def output_csv(objectives):
-    print("Error,PMU,MS,MACs")
-    for obj in objectives:
-        print(f"{obj[0]:.4f},{obj[1]},{obj[2]},{obj[3]}")
+    print("Error,PMU,MS,MACs,IsEfficient")
+    is_efficient = is_pareto_efficient(objectives)
+    for obj, eff in zip(objectives, is_efficient):
+        if eff:
+            print(f"{obj[0]:.4f},{obj[1]},{obj[2]},{obj[3]},{eff}")
 
 
 def load_search_state_file(search_state_file, filter_resources=None):
@@ -209,12 +215,15 @@ def process(output_mode, search_state_file):
 
 
 def main():
-    p = argparse.ArgumentParser()
-    p.add_argument("output_mode", type=str, choices=["csv", "pareto_plot"])
-    p.add_argument("search_state_file", type=str)
-    args = p.parse_args()
+    #test
+    #process("csv", "C:\\Dottorato\\GithubRepo\\uNAS\\artifacts\\cnn_test_dummy_dataset_high_boundaries_1892_min\\test_test_dummy_dataset_bo_search_state.pickle")   
+    process("csv", "C:\\Dottorato\\GithubRepo\\uNAS\\artifacts\\cnn_test_dummy_dataset_low_boundaries_2677_min\\test_test_dummy_dataset_bo_search_state.pickle")
+   # p = argparse.ArgumentParser()
+   # p.add_argument("output_mode", type=str, choices=["csv", "pareto_plot"])
+   # p.add_argument("search_state_file", type=str)
+   # args = p.parse_args()
 
-    process(args.output_mode, args.search_state_file)
+    #process(args.output_mode, args.search_state_file)
 
 
 def polyfit(x, y, degree):

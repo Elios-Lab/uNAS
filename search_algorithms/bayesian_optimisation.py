@@ -51,7 +51,8 @@ class BayesOpt:
                                     f"{self.experiment_name}_bo_search_state.pickle").as_posix()
         options.progress_save_every = save_every
 
-        # options.acq_opt_max_evals = 600
+        #test
+        # options.acq_opt_max_evals = 11
 
         patch_with_func_caller(func_caller, options)
 
@@ -78,4 +79,5 @@ class BayesOpt:
 
     @property
     def acq_opt_method(self):
-        return "aging"
+        # test, insert here the possibility to change method for acq_opt_method
+        return "local"

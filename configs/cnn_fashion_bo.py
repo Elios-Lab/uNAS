@@ -1,4 +1,4 @@
-from tensorflow.keras.callbacks import LearningRateScheduler
+from keras.callbacks import LearningRateScheduler
 from tensorflow_addons.optimizers import AdamW
 
 from config import TrainingConfig, BayesOptConfig, BoundConfig

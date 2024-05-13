@@ -4,7 +4,7 @@ import numpy as np
 from functools import lru_cache
 from typing import List, Union
 from .graph import Graph, OperatorDesc
-from .ops import Conv2D, DWConv2D, Pool, Dense, Add, Input
+from .ops import Conv2D, DWConv2D, Pool, Dense, Add, Input, Conv1D, DWConv1D, Pool1D
 
 
 def peak_memory_usage(g: Graph, exclude_weights=True, exclude_inputs=True):
@@ -103,6 +103,25 @@ def inference_latency(g: Union[Graph, OperatorDesc, List[OperatorDesc]],
             n, o_h, o_w, c = op.output.shape
             pool_h, pool_w = op.pool_size
             work = n * o_h * o_w * c * pool_h * pool_w
+            loads, compute = work, work
+        if isinstance(op, Conv1D):
+            k, i_c, o_c = op.inputs[1].shape
+            n, o, _ = op.output.shape
+            work = n * o * o_c * k * i_c
+            loads, compute = 2 * work, work
+            if op.use_bias:
+                loads += n * o * o_c
+        if isinstance(op, DWConv1D):
+            k, c, _ = op.inputs[1].shape
+            n, o, _ = op.output.shape
+            work = n * c * o * k
+            loads, compute = 2 * work, work
+            if op.use_bias:
+                loads += n * c * o
+        if isinstance(op, Pool1D):
+            n, o, c = op.output.shape
+            pool = op.pool_size
+            work = n * o * c * pool
             loads, compute = work, work
         if isinstance(op, Dense):
             n, _ = op.output.shape

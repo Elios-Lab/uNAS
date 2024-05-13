@@ -1,10 +1,10 @@
 import tensorflow as tf
 from tensorflow.python.keras.callbacks import LearningRateScheduler
 from tensorflow_addons.optimizers import AdamW
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
-from tensorflow.keras.layers import Input, Dense, Conv2D, BatchNormalization, ReLU, \
+from keras.losses import SparseCategoricalCrossentropy
+from keras.layers import Input, Dense, Conv2D, BatchNormalization, ReLU, \
     GlobalAveragePooling2D
-from tensorflow.keras.models import Model
+from keras.models import Model
 
 from dataset import SpeechCommands
 

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from tensorflow.keras.models import Model
+from keras.models import Model
 from resource_models.graph import Graph
 
 
