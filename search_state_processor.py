@@ -217,7 +217,9 @@ def process(output_mode, search_state_file):
 def main():
     #test
     #process("csv", "C:\\Dottorato\\GithubRepo\\uNAS\\artifacts\\cnn_test_dummy_dataset_high_boundaries_1892_min\\test_test_dummy_dataset_bo_search_state.pickle")   
-    process("csv", "C:\\Dottorato\\GithubRepo\\uNAS\\artifacts\\cnn_test_dummy_dataset_low_boundaries_2677_min\\test_test_dummy_dataset_bo_search_state.pickle")
+    #process("csv", "C:\\Dottorato\\GithubRepo\\uNAS\\artifacts\\cnn_test_dummy_dataset_low_boundaries_2677_min\\test_test_dummy_dataset_bo_search_state.pickle")
+    process("pareto_plot", "C:\\Dottorato\\GithubRepo\\uNAS\\artifacts\\cnn_test_dummy_dataset_aging\\test_test_dummy_dataset_agingevosearch_state.pickle")
+    
    # p = argparse.ArgumentParser()
    # p.add_argument("output_mode", type=str, choices=["csv", "pareto_plot"])
    # p.add_argument("search_state_file", type=str)

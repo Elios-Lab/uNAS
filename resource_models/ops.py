@@ -105,8 +105,8 @@ class Pool(OperatorDesc):
 
     def __call__(self, x: TensorDesc):
         super().__call__(x)
-        assert len(x.shape) == 4
-            batch_size, h, w, in_channels = x.shape
+        assert len(x.shape) == 4 
+        batch_size, h, w, in_channels = x.shape
         pool_h, pool_w = self.pool_size
         assert pool_h <= h and pool_w <= w, f"Can't apply {self.pool_size} pooling to {x.shape}"
         output_shape = (batch_size, ceil(h / pool_h), ceil(w / pool_w), in_channels)
@@ -138,11 +138,6 @@ class Add(OperatorDesc):
             output_shape = tuple(output_shape)
         return self._produce_output(shape=output_shape)
     
-
-
-# TEST
-    
-# working on operation for 1d CNN
     
 class Conv1D(OperatorDesc):
     """

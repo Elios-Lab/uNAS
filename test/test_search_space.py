@@ -7,8 +7,14 @@ import numpy as np
 from parameterized import parameterized_class
 from tqdm import tqdm
 
+
+import sys
+sys.path.insert(0, './')
+
+
 from cnn import CnnSearchSpace
 from mlp import MlpSearchSpace
+from cnn1d import Cnn1DSearchSpace
 from resource_models.models import peak_memory_usage, model_size, inference_latency
 
 
@@ -16,6 +22,9 @@ from resource_models.models import peak_memory_usage, model_size, inference_late
     (CnnSearchSpace(), (49, 40, 1), 12),
     (CnnSearchSpace(), (32, 32, 3), 10),
     (CnnSearchSpace(), (28, 28, 1), 10),
+    (Cnn1DSearchSpace(), (49, 1), 2),
+    (Cnn1DSearchSpace(), (150, 3), 4),
+    (Cnn1DSearchSpace(), (20, 9), 10),
     (MlpSearchSpace(), (28, 28, 1), 10),
 ], class_name_func=lambda cls, idx, d: f"{cls.__name__}_{idx}_{d['search_space'].__class__.__name__}")
 class SearchSpaceTests(unittest.TestCase):
@@ -71,5 +80,5 @@ class SearchSpaceTests(unittest.TestCase):
         self.assertTrue(True)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':    
     unittest.main()

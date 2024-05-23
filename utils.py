@@ -175,6 +175,7 @@ class Scheduler:
         worker = self.workers_and_tasks[worker_idx][0]
         self.workers_and_tasks[worker_idx] = (worker, worker.evaluate.remote(*args, **kwargs))
 
+
     def await_any(self):
         completed, pending = ray.wait([t for w, t in self.workers_and_tasks if t is not None],
                                       num_returns=1)

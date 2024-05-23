@@ -27,6 +27,17 @@ class CnnArchitecture(Architecture):
         layer type.
         :returns Output tensor of the network
         """
+
+                
+        #print("input: ", input)
+        #print("num_classes: ", num_classes)
+        #print("conv_layer: ", conv_layer)
+        #print("pooling_layer: ", pooling_layer)
+        #print("dense_layer: ", dense_layer)
+        #print("add_layer: ", add_layer)
+        #print("flatten_layer: ", flatten_layer)
+
+        
         def tie_up_pending_outputs(outputs):
             if len(outputs) == 1:
                 return outputs[0]
