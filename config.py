@@ -41,7 +41,7 @@ class BayesOptConfig:
     # discard areas of the search space with low accuracy without taking other objectives into account.
     multifidelity: bool = False
     starting_points: int = 15
-    rounds: int = 800
+    rounds: int = 200 #test 800
     checkpoint_dir: str = "artifacts"
 
 

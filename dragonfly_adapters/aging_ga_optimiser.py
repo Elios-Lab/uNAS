@@ -62,6 +62,7 @@ class AgingEvoOptimiser(BlackboxOptimiser):
 
     def _determine_next_batch_of_queries(self, batch_size):
         qinfos = [self._determine_next_query() for _ in range(batch_size)]
+
         return qinfos
 
     def _get_method_str(self):

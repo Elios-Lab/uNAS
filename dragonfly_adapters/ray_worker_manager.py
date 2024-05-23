@@ -53,6 +53,8 @@ class RayWorkerManager(AbstractWorkerManager):
     def a_worker_is_free(self, force_await=False):
         if not self.scheduler.has_a_free_worker() or force_await:
             qinfo = self.scheduler.await_any()
+
+
             if not hasattr(qinfo, 'true_val'):
                 qinfo.true_val = qinfo.val
 

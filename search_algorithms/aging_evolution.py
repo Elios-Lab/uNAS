@@ -43,7 +43,7 @@ class GPUTrainer:
         arch = point.arch
         model = self.ss.to_keras_model(arch, data.input_shape, data.num_classes)
         results = self.trainer.train_and_eval(model, sparsity=point.sparsity)
-        val_error, test_error = results["val_error"], results["test_error"]
+        val_error, test_error= results["val_error"], results["test_error"]
         rg = self.ss.to_resource_graph(arch, data.input_shape, data.num_classes,
                                        pruned_weights=results["pruned_weights"])
         unstructured_sparsity = self.trainer.config.pruning and \
@@ -52,6 +52,12 @@ class GPUTrainer:
                              inference_latency(rg, compute_weight=1, mem_access_weight=0)]
         log.info(f"Training complete: val_error={val_error:.4f}, test_error={test_error:.4f}, "
                  f"resource_features={resource_features}.")
+        
+        print("TEST: Oppure il modello lo potrei salvare da qui...")
+        print("TEST: peak_memory_usage(rg), model_size(rg, sparse=sparse), macs(rg)")
+        print(resource_features)
+        print("Model:"+ model)
+        
         return EvaluatedPoint(point=point,
                               val_error=val_error, test_error=test_error,
                               resource_features=resource_features)
@@ -165,6 +171,7 @@ class AgingEvoSearch:
         ss = ray.put(self.config.search_space)
         scheduler = Scheduler([GPUTrainer.remote(ss, trainer)
                                for _ in range(self.max_parallel_evaluations)])
+    
         self.log.info(f"Searching with {self.max_parallel_evaluations} workers.")
 
         def should_submit_more(cap):
