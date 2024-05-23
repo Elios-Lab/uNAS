@@ -28,6 +28,7 @@ class Optimiser(CPGPBandit):
         n = super()._child_handle_data_loaded_from_file(loaded_data_from_file)
         # Recover qinfo objects
         qinfos = []
+
         for i in range(n):
             qinfo = Namespace(point=self.prev_eval_points[i],
                               val=self.prev_eval_vals[i],
@@ -36,7 +37,9 @@ class Optimiser(CPGPBandit):
                 qinfo.fidel = self.prev_eval_fidels[i]
             qinfos.append(qinfo)
             self.update_pareto_front(qinfo)
+
         self._add_data_to_model(qinfos)
+
         return n
 
     def _update_history(self, qinfo):
@@ -57,7 +60,12 @@ class Optimiser(CPGPBandit):
 
     def _determine_next_query(self):
         """ Determine the next point for evaluation. """
+        # test da capire come viene gestito il capital
         anc_data = self._get_ancillary_data_for_acquisition("ei")
+
+        #test
+        anc_data.max_evals = 1
+
         anc_data.curr_acq = "custom_mobo_ts"
         select_pt_func = self.func_caller.scoring_fn
         prev_evaluations = self.history.query_qinfos

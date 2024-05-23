@@ -138,6 +138,7 @@ class NNFunctionCaller(CPFunctionCaller):
     def maximise_acquisition(self, acq_fn, anc_data, *args, **kwargs):
         # Merged from multiple places in Dragonfly's code to select the right optimiser
         # Avoids patching "cp_ga_optimiser_from_proc_args" globally
+
         domain, max_evals = anc_data.domain, anc_data.max_evals
         obj_in_func_caller = CPFunctionCaller(lambda x: acq_fn([x]), domain, domain_orderings=None)
         worker_manager = SyntheticWorkerManager(1, time_distro='const')
@@ -161,16 +162,32 @@ class NNFunctionCaller(CPFunctionCaller):
         # This is the experiment function --- the function called by the "function caller"
         self.log.info("Commencing training...")
         decoded_point = self.decode_point(point)
+        
         epochs = self.get_raw_fidel_from_processed(fidel)[0] if fidel else None
         wrapped_nn = decoded_point["network"]
         sparsity = decoded_point.get("sparsity")
         results = self.model_trainer.train_and_eval(wrapped_nn.to_keras_model(self.space),
                                                     epochs=epochs, sparsity=sparsity)
+
+        
+        # print("post train and eval function call")
+        # print(results)
         wrapped_nn.val_error = results["val_error"]
         wrapped_nn.test_error = results["test_error"]
+        #test model = results["model"]
+
+
         if sparsity:
             rg = wrapped_nn.to_resource_graph(self.space, pruned_weights=results["pruned_weights"])
             wrapped_nn.resource_features = wrapped_nn.compute_resource_features(rg, sparse=True)
+
+        #test l'array  peak_memory_usage(rg), model_size(rg, sparse=sparse), macs(rg)
+        print("TEST: Oppure il modello lo potrei salvare da qui...")
+        print("TEST: peak_memory_usage(rg), model_size(rg, sparse=sparse), macs(rg)")
+        print(wrapped_nn.resource_features)
+        #print("Model:"+ model)
+
+
         self.log.info(f"Training complete: val_error={wrapped_nn.val_error:.4f}, "
                       f"test_error={wrapped_nn.test_error:.4f}, "
                       f"resource_features={wrapped_nn.resource_features}.")
