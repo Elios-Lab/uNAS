@@ -5,7 +5,7 @@ import os
 import numpy as np
 import tensorflow as tf
 from functools import reduce, lru_cache
-
+import json
 
 from dataset import Dataset
 
@@ -198,3 +198,32 @@ def debug_mode():
 @lru_cache(maxsize=None)
 def num_gpus():
     return len(tf.config.experimental.list_physical_devices("GPU"))
+
+
+
+class NumpyEncoder(json.JSONEncoder):
+    """ Custom encoder for numpy data types """
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.bool_):
+            return bool(obj)
+        return super(NumpyEncoder, self).default(obj)
+
+
+
+def generate_nth_id(n, characters = 6):
+    # generate the nth element of the cartesian product of the characters
+    # n is 0-indexed
+
+    chars = [chr(i) for i in range(ord('a'), ord('z')+1)]
+    base = len(chars)
+    digits = []
+    while n > 0 or len(digits) < characters:
+        digits.append(n % base)
+        n = n // base
+    return ''.join(chars[d] for d in reversed(digits))

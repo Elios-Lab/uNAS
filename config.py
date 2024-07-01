@@ -64,3 +64,10 @@ class BoundConfig:
     peak_mem_bound: Optional[int] = None
     model_size_bound: Optional[int] = None
     mac_bound: Optional[int] = None
+
+
+@dataclass
+class ModelSaverConfig:
+    # The criteria to save the model. Options are "all", "boundaries", "pareto", "none".
+    save_criteria: Optional[str] = None
+    save_path: Optional[str] = None

@@ -10,6 +10,10 @@ from pathlib import Path
 
 from search_algorithms import BayesOpt
 
+from model_saver import ModelSaver
+
+import time
+
 
 def main():
     logging.basicConfig(level=logging.INFO,
@@ -47,15 +51,25 @@ def main():
     search_space.input_shape = dataset.input_shape
     search_space.num_classes = dataset.num_classes
 
+    model_saver = ModelSaver(configs["model_saver_config"], configs["bound_config"])
+
     search = algo(experiment_name=args.name or "search",
                   search_config=configs["search_config"],
                   training_config=configs["training_config"],
-                  bound_config=configs["bound_config"])
+                  
+                  bound_config=configs["bound_config"], model_saver=model_saver)
 
     if args.load_from and not os.path.exists(args.load_from):
         log.warning("Search state file to load from is not found, the search will start from scratch.")
         args.load_from = None
     search.search(load_from=args.load_from, save_every=args.save_every)
+
+    print("Search complete")
+
+    # Wait for the last model to be evaluated and saved
+    time.sleep(30)
+    print("Dumping models")
+    model_saver.save_models()
 
 
 if __name__ == "__main__":

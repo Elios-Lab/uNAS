@@ -11,9 +11,9 @@
       "program": "${file}",
       "console": "integratedTerminal",
       "args": [
-        "configs/test_dummy_dataset.py",
         "--name",
-        "test_test_dummy_dataset"
+        "test_test_dummy_dataset",
+        "configs/test_dummy_dataset.py"
       ]
     }
   ]

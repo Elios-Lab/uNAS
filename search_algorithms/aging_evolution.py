@@ -13,6 +13,8 @@ from model_trainer import ModelTrainer
 from resource_models.models import peak_memory_usage, model_size, inference_latency
 from utils import Scheduler, debug_mode
 
+from model_saver import ModelSaver
+
 
 @dataclass
 class ArchitecturePoint:
@@ -30,9 +32,13 @@ class EvaluatedPoint:
 
 @ray.remote(num_gpus=0 if debug_mode() else 1, num_cpus=1 if debug_mode() else 6)
 class GPUTrainer:
-    def __init__(self, search_space, trainer):
+    def __init__(self, search_space, trainer, model_saver=None):
         self.trainer = trainer
         self.ss = search_space
+
+        self.model_saver = model_saver
+
+
         logging.basicConfig(level=logging.INFO,
                             format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
@@ -53,11 +59,9 @@ class GPUTrainer:
         log.info(f"Training complete: val_error={val_error:.4f}, test_error={test_error:.4f}, "
                  f"resource_features={resource_features}.")
         
-        print("TEST: Oppure il modello lo potrei salvare da qui...")
-        print("TEST: peak_memory_usage(rg), model_size(rg, sparse=sparse), macs(rg)")
-        print(resource_features)
-        print("Model:"+ model)
-        
+        if self.model_saver:
+            self.model_saver.evaluate_and_save(model, test_error, resource_features)
+
         return EvaluatedPoint(point=point,
                               val_error=val_error, test_error=test_error,
                               resource_features=resource_features)
@@ -68,7 +72,8 @@ class AgingEvoSearch:
                  experiment_name: str,
                  search_config: AgingEvoConfig,
                  training_config: TrainingConfig,
-                 bound_config: BoundConfig):
+                 bound_config: BoundConfig,
+                 model_saver: ModelSaver = None):
         self.log = logging.getLogger(name=f"AgingEvoSearch [{experiment_name}]")
         self.config = search_config
         self.trainer = ModelTrainer(training_config)
@@ -100,6 +105,8 @@ class AgingEvoSearch:
         num_gpus = len(tf.config.experimental.list_physical_devices("GPU"))
         self.num_gpus = num_gpus
         self.max_parallel_evaluations = search_config.max_parallel_evaluations or num_gpus or 1 # Default to 1 worker
+
+        self.model_saver = model_saver
 
     def save_state(self, file):
         with open(file, "wb") as f:
@@ -169,7 +176,8 @@ class AgingEvoSearch:
 
         trainer = ray.put(self.trainer)
         ss = ray.put(self.config.search_space)
-        scheduler = Scheduler([GPUTrainer.remote(ss, trainer)
+
+        scheduler = Scheduler([GPUTrainer.remote(ss, trainer, self.model_saver)
                                for _ in range(self.max_parallel_evaluations)])
     
         self.log.info(f"Searching with {self.max_parallel_evaluations} workers.")
@@ -187,6 +195,7 @@ class AgingEvoSearch:
                 scheduler.submit(self.random_sample())
             else:
                 info = scheduler.await_any()
+
                 self.population.append(info)
                 self.history.append(info)
                 self.maybe_save_state(save_every)
@@ -200,9 +209,14 @@ class AgingEvoSearch:
                 scheduler.submit(self.evolve(parent.point))
             else:
                 info = scheduler.await_any()
+                
                 self.population.append(info)
                 while len(self.population) > self.population_size:
                     self.population.pop(0)
                 self.history.append(info)
                 self.maybe_save_state(save_every)
                 self.bounds_log()
+
+
+
+        print("Search done!")

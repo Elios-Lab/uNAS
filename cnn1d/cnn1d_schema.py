@@ -2,6 +2,7 @@ from typing import Dict
 from schema_types import Discrete, Boolean, Categorical, ValueType
 
 MAX_CONV_BLOCKS = 10
+MIN_CONV_BLOCKS = 0
 MAX_LAYERS_PER_CONV_BLOCK = 3
 MAX_DENSE_BLOCKS = 3
 
@@ -16,7 +17,7 @@ def build_schema() -> Dict[str, ValueType]:
     :returns Free search space variables, keyed by name.
     """
     keys = []
-    keys.append(Discrete("num-conv-blocks", bounds=(1, MAX_CONV_BLOCKS)))
+    keys.append(Discrete("num-conv-blocks", bounds=(MIN_CONV_BLOCKS, MAX_CONV_BLOCKS)))
     for c in range(MAX_CONV_BLOCKS):
         keys.append(Boolean(f"conv{c}-is-branch", can_be_optional=(c > 0)))
         keys.append(Discrete(f"conv{c}-num-layers", bounds=(1, MAX_LAYERS_PER_CONV_BLOCK), can_be_optional=True))

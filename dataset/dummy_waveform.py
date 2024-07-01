@@ -6,7 +6,6 @@ import random
 
 from .dataset import Dataset
 
-difficulty = 1
 
 
 class DummyWaveform(Dataset):
@@ -34,16 +33,24 @@ class DummyWaveform(Dataset):
         input_shape(): Returns the shape of the input data.
     """
 
-    def __init__(self, samples_per_second=50, duration=1, length=100):
+    def __init__(self, samples_per_second=50, duration=1, length=100, difficulty=1, num_classes=2):
         self._samples_per_second = samples_per_second
         self._duration = duration
-        self._num_classes = 2
+        self._num_classes = num_classes
         self._length = length
         self._input_shape = (self._samples_per_second * self._duration, 1)
+        self._difficulty = difficulty
+
+        self._classes_mean = [20, 60, 100, 140, 180, 220]
+        self._classes_variance = 10 * np.ones(len(self._classes_mean))
 
     def _dataset(self, is_training=True):
-        x = [tf.convert_to_tensor(generate_sine_wave(freq=generate_random_frequency(i % 2 == 0), sample_rate=self._samples_per_second, phase=0, duration=self._duration)) for i in range(self._length if is_training else self._length // 10)]
-        y = [tf.convert_to_tensor(tf.zeros([], dtype=tf.int64) if i % 2 == 0 else tf.ones([], dtype=tf.int64), dtype=tf.int64) for i in range(self._length if is_training else self._length // 10)]
+
+        x = []
+        y = []
+        for i in range(self.num_classes):
+            x += [tf.convert_to_tensor(generate_sine_wave(freq=generate_random_frequency(self._difficulty, i, self._classes_mean, self._classes_variance), sample_rate=self._samples_per_second, phase=0, duration=self._duration)) for _ in range(self._length if is_training else self._length // 10)]
+            y += [tf.convert_to_tensor(tf.zeros([], dtype=tf.int64) + i, dtype=tf.int64) for _ in range(self._length if is_training else self._length // 10)]
 
         a = tf.data.Dataset.from_tensor_slices((x, y))
         return a
@@ -86,24 +93,19 @@ def generate_square_wave(freq, sample_rate, phase, duration):
 
 
 
-def generate_random_frequency(even = None):
+def generate_random_frequency(difficulty = 1, class_label = 0, classes_mean = [250, 650], classes_variance = [130, 130]):
     # Generate a random frequency according to the difficulty level
 
-    # if difficulty is 0, generate a random frequency between 1Hz and 100Hz (even for class 0, odd for class 1)
+    # use the mean and variance of the classes
+
     if difficulty == 0:
-        # if even is None, generate a random frequency
-        if even is None:
-            return random.randint(1, 100)
-        # if even is True, generate an even frequency
-        if even:
-            return random.randint(1, 100) * 2
-        # if even is False, generate an odd frequency
-        return random.randint(1, 100) * 2 + 1
+        if class_label > 1:
+            raise ValueError("Class label must be 0 or 1 for difficulty 0")
+        return random.randint(1, 100) if class_label == 0 else random.randint(1, 100) * 2 + 1
     
-    # if difficulty is 1, generate a random frequency with normal distribution, centered at 250 Hz for class 0 and 650 Hz for class 1
     if difficulty == 1:
-        if even is None:
-            return random.randint(1, 1000)
-        if even:
-            return int(random.normalvariate(250, 200))
-        return int(random.normalvariate(650, 200))
+        if class_label > len(classes_mean) - 1 :
+            raise ValueError("Class label is beyond the number of classes for difficulty 1")
+        return max(1, int(random.normalvariate(classes_mean[class_label], classes_variance[class_label])))
+
+    

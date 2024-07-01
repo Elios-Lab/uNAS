@@ -7,6 +7,7 @@ from dragonfly_adapters import NNFunctionCaller, patch_with_func_caller, get_opt
 from config import BayesOptConfig, TrainingConfig, BoundConfig
 from dragonfly_adapters.ray_worker_manager import RayWorkerManager
 from model_trainer import ModelTrainer
+from model_saver import ModelSaver
 
 
 class BayesOpt:
@@ -14,7 +15,8 @@ class BayesOpt:
                  experiment_name: str,
                  search_config: BayesOptConfig,
                  training_config: TrainingConfig,
-                 bound_config: BoundConfig):
+                 bound_config: BoundConfig, 
+                 model_saver : ModelSaver = None):
         assert search_config.starting_points >= 1
 
         self.log = logging.getLogger(name=f"BayesOpt [{experiment_name}]")
@@ -24,6 +26,9 @@ class BayesOpt:
         self.root_dir = Path(search_config.checkpoint_dir)
         self.root_dir.mkdir(parents=True, exist_ok=True)
         self.experiment_name = experiment_name
+
+        self.model_saver = model_saver
+
 
         if training_config.pruning and not training_config.pruning.structured:
             self.log.warning("For unstructured pruning, we can only use the model size resource metric.")
@@ -37,7 +42,7 @@ class BayesOpt:
     def search(self, load_from: str = None, save_every: int = None):
         func_caller = NNFunctionCaller(self.trainer, self.config.search_space,
                                        self.constraint_bounds, self.acq_opt_method,
-                                       is_mf=self.config.multifidelity)
+                                       is_mf=self.config.multifidelity, model_saver=self.model_saver)
         options = get_optimiser_options()
 
         options.init_set_to_fidel_to_opt_with_prob = 0.5

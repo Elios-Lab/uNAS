@@ -152,3 +152,9 @@ static
 artifacts
 *.pickle
 *.h5
+
+*.bak
+
+# draft directory
+
+draft

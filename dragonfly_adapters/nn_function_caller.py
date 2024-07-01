@@ -22,7 +22,7 @@ from .local_ga_optimiser import build_local_cp_ga_optimiser
 
 class NNFunctionCaller(CPFunctionCaller):
     def __init__(self, model_trainer: ModelTrainer, space: SearchSpace, constraint_bounds,
-                 acq_opt_method="aging", is_mf=False):
+                 acq_opt_method="aging", is_mf=False, model_saver=None):
         self.model_trainer = model_trainer
         self.space = space
         self.constraint_bounds = constraint_bounds
@@ -30,6 +30,9 @@ class NNFunctionCaller(CPFunctionCaller):
 
         self.log = logging.getLogger(name="NNExperiment")
         pruning = self.model_trainer.config.pruning
+
+        self.model_saver = model_saver
+
 
         opt_domain = {"network": NNDomain("unas-net", constraint_checker=lambda x: True)}
         if pruning:
@@ -166,26 +169,24 @@ class NNFunctionCaller(CPFunctionCaller):
         epochs = self.get_raw_fidel_from_processed(fidel)[0] if fidel else None
         wrapped_nn = decoded_point["network"]
         sparsity = decoded_point.get("sparsity")
-        results = self.model_trainer.train_and_eval(wrapped_nn.to_keras_model(self.space),
-                                                    epochs=epochs, sparsity=sparsity)
+        model = wrapped_nn.to_keras_model(self.space)
+
+
+        results = self.model_trainer.train_and_eval(model, epochs=epochs, sparsity=sparsity)
 
         
-        # print("post train and eval function call")
-        # print(results)
         wrapped_nn.val_error = results["val_error"]
         wrapped_nn.test_error = results["test_error"]
         #test model = results["model"]
+
 
 
         if sparsity:
             rg = wrapped_nn.to_resource_graph(self.space, pruned_weights=results["pruned_weights"])
             wrapped_nn.resource_features = wrapped_nn.compute_resource_features(rg, sparse=True)
 
-        #test l'array  peak_memory_usage(rg), model_size(rg, sparse=sparse), macs(rg)
-        print("TEST: Oppure il modello lo potrei salvare da qui...")
-        print("TEST: peak_memory_usage(rg), model_size(rg, sparse=sparse), macs(rg)")
-        print(wrapped_nn.resource_features)
-        #print("Model:"+ model)
+
+        self.model_saver.evaluate_and_save(model, wrapped_nn.test_error, wrapped_nn.resource_features)
 
 
         self.log.info(f"Training complete: val_error={wrapped_nn.val_error:.4f}, "
