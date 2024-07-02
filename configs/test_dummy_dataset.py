@@ -24,6 +24,7 @@ bound_config = BoundConfig(
 )
 
 
+
 '''
 search_algorithm = BayesOpt
 
@@ -42,7 +43,6 @@ search_config = AgingEvoConfig(
     checkpoint_dir = "artifacts/cnn_test_dummy_dataset_model_saver",
     rounds = 1 # 500
 )
-
 
 
 model_saver_config = ModelSaverConfig(

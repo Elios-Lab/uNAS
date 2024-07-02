@@ -154,7 +154,7 @@ classes = ['01', '03', '04', '05', '06']
 
 
 class Z24_Dataset(Dataset):
-    def __init__(self, classes = ['01', '03', '04', '05', '06'], windows_length=65536, path= 'C:\\Dottorato\\Z24\\DatasetPDT', fix_seeds = False):
+    def __init__(self, classes = ['01', '03', '04', '05', '06'], windows_length=8192, path= 'C:\\Dottorato\\Z24\\DatasetPDT', fix_seeds = False):
         if fix_seeds:
             np.random.seed(42)
             tf.random.set_seed(42)

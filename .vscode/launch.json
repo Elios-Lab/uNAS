@@ -10,7 +10,12 @@
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal",
-      "args": ["--name", "test_test_Z24_dataset", "configs/test_Z24.py"]
+      //"args": ["--name", "test_test_Z24_dataset", "configs/test_Z24.py"]
+      "args": [
+        "--name",
+        "test_test_dummy_dataset",
+        "configs/test_dummy_dataset.py"
+      ]
     }
   ]
 }

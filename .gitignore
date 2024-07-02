@@ -158,3 +158,5 @@ artifacts
 # draft directory
 
 draft
+
+.vscode/

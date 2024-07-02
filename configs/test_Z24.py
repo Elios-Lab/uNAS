@@ -7,17 +7,17 @@ from search_algorithms import AgingEvoSearch, BayesOpt
 
 
 training_config = TrainingConfig(
-    dataset = Z24_Dataset(classes = ['01', '03'], windows_length=65536, path= 'C:\\Dottorato\\Z24\\DatasetPDT', fix_seeds = False), # , '04', '05', '06'
+    dataset = Z24_Dataset(classes = ['01', '03'], windows_length=8192, path= 'C:\\Dottorato\\Z24\\DatasetPDT', fix_seeds = False), # , '04', '05', '06'
     optimizer = lambda: tf.optimizers.Adam(learning_rate=0.001),
     callbacks = lambda: [tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=4)],
-    epochs = 1, # 75 
+    epochs = 150, # 75 
 )
 
 bound_config = BoundConfig(
-   error_bound = 0.4,
-   peak_mem_bound = 20000,
-   model_size_bound = 50000,
-   mac_bound = 30000
+   error_bound = 0.25,
+   peak_mem_bound = 500000,
+   model_size_bound = 1000000,
+   mac_bound = 500000
 )
 
 
@@ -37,7 +37,7 @@ search_algorithm = AgingEvoSearch
 search_config = AgingEvoConfig(
     search_space = Cnn1DSearchSpace(),
     checkpoint_dir = "artifacts/cnn_test_dummy_dataset_model_saver",
-    rounds = 1 # 500
+    rounds = 200
 )
 
 
