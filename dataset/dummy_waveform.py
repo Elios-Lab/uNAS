@@ -44,25 +44,46 @@ class DummyWaveform(Dataset):
         self._classes_mean = [20, 60, 100, 140, 180, 220]
         self._classes_variance = 10 * np.ones(len(self._classes_mean))
 
-    def _dataset(self, is_training=True):
+        self._generate_dataset()
 
-        x = []
-        y = []
+    def _generate_dataset(self):
+
+        x_train = []
+        y_train = []
+
+        x_val = []
+        y_val = []
+
+        x_test = []
+        y_test = []
+
         for i in range(self.num_classes):
-            x += [tf.convert_to_tensor(generate_sine_wave(freq=generate_random_frequency(self._difficulty, i, self._classes_mean, self._classes_variance), sample_rate=self._samples_per_second, phase=0, duration=self._duration)) for _ in range(self._length if is_training else self._length // 10)]
-            y += [tf.convert_to_tensor(tf.zeros([], dtype=tf.int64) + i, dtype=tf.int64) for _ in range(self._length if is_training else self._length // 10)]
+            x_train += [tf.convert_to_tensor(generate_sine_wave(freq=generate_random_frequency(self._difficulty, i, self._classes_mean, self._classes_variance), sample_rate=self._samples_per_second, phase=0, duration=self._duration)) for _ in range(self._length)]
+            y_train += [tf.convert_to_tensor(tf.zeros([], dtype=tf.int64) + i, dtype=tf.int64) for _ in range(self._length)]
 
-        a = tf.data.Dataset.from_tensor_slices((x, y))
-        return a
+            x_val += [tf.convert_to_tensor(generate_sine_wave(freq=generate_random_frequency(self._difficulty, i, self._classes_mean, self._classes_variance), sample_rate=self._samples_per_second, phase=0, duration=self._duration)) for _ in range(self._length//10)]
+            y_val += [tf.convert_to_tensor(tf.zeros([], dtype=tf.int64) + i, dtype=tf.int64) for _ in range(self._length//10)]
+
+            x_test += [tf.convert_to_tensor(generate_sine_wave(freq=generate_random_frequency(self._difficulty, i, self._classes_mean, self._classes_variance), sample_rate=self._samples_per_second, phase=0, duration=self._duration)) for _ in range(self._length//10)]
+            y_test += [tf.convert_to_tensor(tf.zeros([], dtype=tf.int64) + i, dtype=tf.int64) for _ in range(self._length//10)]
+
+        self.x_train = tf.stack(x_train)
+        self.y_train = tf.stack(y_train)
+
+        self.x_val = tf.stack(x_val)
+        self.y_val = tf.stack(y_val)
+
+        self.x_test = tf.stack(x_test)
+        self.y_test = tf.stack(y_test)
 
     def train_dataset(self) -> tf.data.Dataset:
-        return self._dataset(is_training=True)
+        return tf.data.Dataset.from_tensor_slices((self.x_train, self.y_train))
 
     def validation_dataset(self) -> tf.data.Dataset:
-        return self._dataset(is_training=False)
+        return  tf.data.Dataset.from_tensor_slices((self.x_val, self.y_val))
 
     def test_dataset(self) -> tf.data.Dataset:
-        return self._dataset(is_training=False)
+        return tf.data.Dataset.from_tensor_slices((self.x_test, self.y_test))
 
     @property
     def num_classes(self) -> int:

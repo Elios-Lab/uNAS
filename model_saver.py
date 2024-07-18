@@ -53,12 +53,12 @@ class ModelSaver:
 
 
 
-    def pack_model(self, model, test_error, resource_features):
+    def pack_model(self, model, val_error, test_error, resource_features):
         pmu, ms, macs = resource_features
 
         layers_config = [layer.get_config() for layer in model.layers]
 
-        return {"model": model, "test_error": int(test_error), "pmu": int(pmu), "ms": int(ms), "macs": int(macs), "layers_config": layers_config}
+        return {"model": model, "val_error": float(val_error), "test_error": float(test_error), "pmu": int(pmu), "ms": int(ms), "macs": int(macs), "layers_config": layers_config}
 
     def convert_to_tflite(model, representative_dataset, output_file):
         converter = tf.lite.TFLiteConverter.from_keras_model(model)
@@ -136,10 +136,10 @@ class ModelSaver:
         return pareto_efficient_objects
 
 
-    def evaluate_and_save(self, model, test_error, resource_features):
+    def evaluate_and_save(self, model, val_error, test_error, resource_features):
         print("Evaluating and saving model")
 
-        model_obj = self.pack_model(model, test_error, resource_features)
+        model_obj = self.pack_model(model, val_error, test_error, resource_features)
 
         if self.save_criteria == "all":
             self.store_model(model_obj)

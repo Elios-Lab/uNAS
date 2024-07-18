@@ -60,7 +60,7 @@ class GPUTrainer:
                  f"resource_features={resource_features}.")
         
         if self.model_saver:
-            self.model_saver.evaluate_and_save(model, test_error, resource_features)
+            self.model_saver.evaluate_and_save(model, val_error, test_error, resource_features)
 
         return EvaluatedPoint(point=point,
                               val_error=val_error, test_error=test_error,

@@ -13,7 +13,8 @@ training_config = TrainingConfig(
     dataset = DummyWaveform(samples_per_second= 1000, duration=1, length=5000, difficulty=1, num_classes = 6), # Dummy((10,10,1),2,50),  #
     optimizer = lambda: tf.optimizers.Adam(learning_rate=0.001),
     callbacks = lambda: [tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=4)],
-    epochs = 1, # 75 
+    epochs = 75, # 75 
+    batch_size= 16
 )
 
 bound_config = BoundConfig(
@@ -41,11 +42,11 @@ search_algorithm = AgingEvoSearch
 search_config = AgingEvoConfig(
     search_space = Cnn1DSearchSpace(),
     checkpoint_dir = "artifacts/cnn_test_dummy_dataset_model_saver",
-    rounds = 1 # 500
+    rounds = 10 # 500
 )
 
 
 model_saver_config = ModelSaverConfig(
-    save_criteria = "pareto",
+    save_criteria = "none",
     save_path = "artifacts/cnn_test_dummy_dataset/model_saver"
 )

@@ -158,6 +158,7 @@ class Z24_Dataset(Dataset):
         if fix_seeds:
             np.random.seed(42)
             tf.random.set_seed(42)
+            random.seed(42)
             
         self._classes = classes
         self._windows_length = windows_length

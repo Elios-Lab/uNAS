@@ -186,7 +186,7 @@ class NNFunctionCaller(CPFunctionCaller):
             wrapped_nn.resource_features = wrapped_nn.compute_resource_features(rg, sparse=True)
 
 
-        self.model_saver.evaluate_and_save(model, wrapped_nn.test_error, wrapped_nn.resource_features)
+        self.model_saver.evaluate_and_save(model, wrapped_nn.val_error, wrapped_nn.test_error, wrapped_nn.resource_features)
 
 
         self.log.info(f"Training complete: val_error={wrapped_nn.val_error:.4f}, "
