@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from keras.models import Model
-from resource_models.graph import Graph
+from uNAS.resource_models.graph import Graph
 
 
 class Architecture(ABC):

@@ -1,9 +1,9 @@
 import tensorflow as tf
 
-from config import TrainingConfig, BayesOptConfig, BoundConfig, AgingEvoConfig, ModelSaverConfig
+from uNAS.config import TrainingConfig, BayesOptConfig, BoundConfig, AgingEvoConfig, ModelSaverConfig
 from dataset.Z24_dataset import Z24_Dataset
-from cnn1d import Cnn1DSearchSpace
-from search_algorithms import AgingEvoSearch, BayesOpt
+from uNAS.cnn1d import Cnn1DSearchSpace
+from uNAS.search_algorithms import AgingEvoSearch, BayesOpt
 
 
 training_config = TrainingConfig(

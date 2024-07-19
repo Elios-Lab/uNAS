@@ -1,4 +1,4 @@
-from config import PruningConfig, BoundConfig
+from uNAS.config import PruningConfig, BoundConfig
 from configs.cnn_cifar10_aging import training_config, search_config, search_algorithm
 
 training_config.pruning = PruningConfig(

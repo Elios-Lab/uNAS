@@ -2,7 +2,7 @@ import tensorflow as tf
 
 from typing import List, Callable, Optional
 from dataclasses import dataclass
-from search_space import SearchSpace
+from uNAS.search_space import SearchSpace
 from dataset import Dataset
 
 

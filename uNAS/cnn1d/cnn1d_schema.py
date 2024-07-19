@@ -1,5 +1,5 @@
 from typing import Dict
-from schema_types import Discrete, Boolean, Categorical, ValueType
+from uNAS.schema_types import Discrete, Boolean, Categorical, ValueType
 
 MAX_CONV_BLOCKS = 10
 MIN_CONV_BLOCKS = 0

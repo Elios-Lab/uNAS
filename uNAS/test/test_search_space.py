@@ -12,9 +12,9 @@ import sys
 sys.path.insert(0, './')
 
 
-from cnn import CnnSearchSpace
-from mlp import MlpSearchSpace
-from cnn1d import Cnn1DSearchSpace
+from uNAS.cnn import CnnSearchSpace
+from uNAS.mlp import MlpSearchSpace
+from uNAS.cnn1d import Cnn1DSearchSpace
 from resource_models.models import peak_memory_usage, model_size, inference_latency
 
 

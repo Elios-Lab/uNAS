@@ -1,10 +1,10 @@
 from tensorflow.python.keras.callbacks import LearningRateScheduler
 from tensorflow_addons.optimizers import AdamW
 
-from config import TrainingConfig, BoundConfig, AgingEvoConfig
-from cnn import CnnSearchSpace
+from uNAS.config import TrainingConfig, BoundConfig, AgingEvoConfig
+from uNAS.cnn import CnnSearchSpace
 from dataset.speech_commands import SpeechCommands
-from search_algorithms import AgingEvoSearch
+from uNAS.search_algorithms import AgingEvoSearch
 
 search_algorithm = AgingEvoSearch
 

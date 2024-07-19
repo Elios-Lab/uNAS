@@ -1,8 +1,8 @@
 import tensorflow as tf
 import json
 import os
-from config import ModelSaverConfig, BoundConfig
-from utils import NumpyEncoder, generate_nth_id
+from uNAS.config import ModelSaverConfig, BoundConfig
+from uNAS.utils import NumpyEncoder, generate_nth_id
 import pickle
 import json
 import csv

@@ -1,5 +1,5 @@
 from typing import Dict
-from schema_types import Discrete, ValueType
+from uNAS.schema_types import Discrete, ValueType
 
 MAX_DENSE_LAYERS = 7
 

@@ -2,11 +2,11 @@ import numpy as np
 import tensorflow as tf
 
 
-from architecture import Architecture
-from cnn import CnnSearchSpace
-from cnn1d import Cnn1DSearchSpace
-from mlp import MlpSearchSpace
-from resource_models.models import model_size, peak_memory_usage
+from uNAS.architecture import Architecture
+from uNAS.cnn import CnnSearchSpace
+from uNAS.cnn1d import Cnn1DSearchSpace
+from uNAS.mlp import MlpSearchSpace
+from uNAS.resource_models.models import model_size, peak_memory_usage
 
 
 search_space_options = [MlpSearchSpace, Cnn1DSearchSpace, CnnSearchSpace]

@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from .dataset import Dataset
+from uNAS.dataset import Dataset
 from .speech_dataset import SpeechDataset
 
 DEFAULT_WORDS = ['down', 'go', 'left', 'no', 'off', 'on', 'right', 'stop', 'up', 'yes']

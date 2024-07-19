@@ -1,10 +1,10 @@
 import tensorflow_addons as tfa
 from keras.callbacks import ReduceLROnPlateau, EarlyStopping
 
-from config import TrainingConfig, BayesOptConfig, BoundConfig, PruningConfig, AgingEvoConfig
+from uNAS.config import TrainingConfig, BayesOptConfig, BoundConfig, PruningConfig, AgingEvoConfig
 from dataset import CIFAR10
-from cnn import CnnSearchSpace
-from search_algorithms import AgingEvoSearch
+from uNAS.cnn import CnnSearchSpace
+from uNAS.search_algorithms import AgingEvoSearch
 
 search_algorithm = AgingEvoSearch
 

@@ -4,7 +4,7 @@ import numpy as np
 
 from pathlib import Path
 from typing import Tuple
-from .dataset import Dataset
+from uNAS.dataset import Dataset
 from .utils import with_probability, random_rotate, random_shift
 
 

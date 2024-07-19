@@ -1,8 +1,8 @@
 import tensorflow as tf
 
-from config import TrainingConfig, BayesOptConfig, BoundConfig
+from uNAS.config import TrainingConfig, BayesOptConfig, BoundConfig
 from dataset import FashionMNIST
-from mlp import MlpSearchSpace
+from uNAS.mlp import MlpSearchSpace
 
 training_config = TrainingConfig(
     dataset=FashionMNIST(),

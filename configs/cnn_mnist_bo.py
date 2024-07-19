@@ -1,9 +1,9 @@
 import tensorflow_addons as tfa
 
-from config import TrainingConfig, BayesOptConfig, BoundConfig
+from uNAS.config import TrainingConfig, BayesOptConfig, BoundConfig
 from dataset import MNIST
-from cnn import CnnSearchSpace
-from search_algorithms import BayesOpt
+from uNAS.cnn import CnnSearchSpace
+from uNAS.search_algorithms import BayesOpt
 
 search_algorithm = BayesOpt
 

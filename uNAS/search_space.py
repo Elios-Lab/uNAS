@@ -1,9 +1,9 @@
 from keras.models import Model
 from abc import ABC, abstractmethod
 from typing import List, Union, TypeVar, Dict
-from architecture import Architecture
-from resource_models.graph import Graph
-from schema_types import ValueType
+from uNAS.architecture import Architecture
+from uNAS.resource_models.graph import Graph
+from uNAS.schema_types import ValueType
 
 
 ArchType = TypeVar('ArchType', bound=Architecture)

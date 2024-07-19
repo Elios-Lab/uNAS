@@ -4,7 +4,7 @@ import tensorflow as tf
 
 from dragonfly.exd.worker_manager import AbstractWorkerManager
 
-from utils import Scheduler, debug_mode
+from uNAS.utils import Scheduler, debug_mode
 
 
 class Worker:

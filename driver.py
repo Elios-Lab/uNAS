@@ -8,9 +8,10 @@ import tensorflow as tf
 
 from pathlib import Path
 
-from search_algorithms import BayesOpt
 
-from model_saver import ModelSaver
+from uNAS.search_algorithms import BayesOpt
+
+from uNAS import uNAS
 
 import time
 
@@ -28,6 +29,7 @@ def main():
     parser.add_argument("--seed", type=int, default=0, help="A seed for the global NumPy and TensorFlow random state")
     args = parser.parse_args()
 
+
     np.random.seed(args.seed)
     tf.random.set_seed(args.seed)
 
@@ -41,35 +43,7 @@ def main():
     configs = {}
     exec(Path(args.config_file).read_text(), configs)
 
-    if "search_algorithm" not in configs:
-        algo = BayesOpt
-    else:
-        algo = configs["search_algorithm"]
-
-    search_space = configs["search_config"].search_space
-    dataset = configs["training_config"].dataset
-    search_space.input_shape = dataset.input_shape
-    search_space.num_classes = dataset.num_classes
-
-    model_saver = ModelSaver(configs["model_saver_config"], configs["bound_config"])
-
-    search = algo(experiment_name=args.name or "search",
-                  search_config=configs["search_config"],
-                  training_config=configs["training_config"],
-                  
-                  bound_config=configs["bound_config"], model_saver=model_saver)
-
-    if args.load_from and not os.path.exists(args.load_from):
-        log.warning("Search state file to load from is not found, the search will start from scratch.")
-        args.load_from = None
-    search.search(load_from=args.load_from, save_every=args.save_every)
-
-    print("Search complete")
-
-    # Wait for the last model to be evaluated and saved
-    time.sleep(30)
-    print("Dumping models")
-    model_saver.save_models()
+    uNAS(configs, log).run(args)
 
 
 if __name__ == "__main__":

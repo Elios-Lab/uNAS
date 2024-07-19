@@ -2,7 +2,7 @@ from typing import Tuple
 
 import tensorflow as tf
 
-from .dataset import Dataset
+from uNAS.dataset import Dataset
 
 
 class Dummy(Dataset):

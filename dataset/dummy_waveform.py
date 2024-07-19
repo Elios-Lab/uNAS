@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 import random
 
-from .dataset import Dataset
+from uNAS.dataset import Dataset
 
 
 

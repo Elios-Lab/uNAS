@@ -1,9 +1,9 @@
 import tensorflow_addons as tfa
 from keras.callbacks import ReduceLROnPlateau, EarlyStopping
 
-from config import TrainingConfig, BayesOptConfig, BoundConfig
+from uNAS.config import TrainingConfig, BayesOptConfig, BoundConfig
 from dataset import VisualWakeWords
-from cnn import CnnSearchSpace
+from uNAS.cnn import CnnSearchSpace
 
 training_config = TrainingConfig(
     dataset=VisualWakeWords("/datasets/COCO/2014/records"),

@@ -3,11 +3,11 @@ import pickle
 import time
 from pathlib import Path
 
-from dragonfly_adapters import NNFunctionCaller, patch_with_func_caller, get_optimiser_options, Optimiser
-from config import BayesOptConfig, TrainingConfig, BoundConfig
-from dragonfly_adapters.ray_worker_manager import RayWorkerManager
-from model_trainer import ModelTrainer
-from model_saver import ModelSaver
+from uNAS.dragonfly_adapters import NNFunctionCaller, patch_with_func_caller, get_optimiser_options, Optimiser
+from uNAS.config import BayesOptConfig, TrainingConfig, BoundConfig
+from uNAS.dragonfly_adapters.ray_worker_manager import RayWorkerManager
+from uNAS.model_trainer import ModelTrainer
+from uNAS.model_saver import ModelSaver
 
 
 class BayesOpt:

@@ -7,13 +7,13 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import List, Union, Optional
 
-from architecture import Architecture
-from config import AgingEvoConfig, TrainingConfig, BoundConfig
-from model_trainer import ModelTrainer
-from resource_models.models import peak_memory_usage, model_size, inference_latency
-from utils import Scheduler, debug_mode
+from uNAS.architecture import Architecture
+from uNAS.config import AgingEvoConfig, TrainingConfig, BoundConfig
+from uNAS.model_trainer import ModelTrainer
+from uNAS.resource_models.models import peak_memory_usage, model_size, inference_latency
+from uNAS.utils import Scheduler, debug_mode
 
-from model_saver import ModelSaver
+from uNAS.model_saver import ModelSaver
 
 
 @dataclass

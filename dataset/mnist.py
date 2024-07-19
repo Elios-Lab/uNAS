@@ -3,7 +3,7 @@ import numpy as np
 
 from abc import ABC, abstractmethod
 
-from .dataset import Dataset
+from uNAS.dataset import Dataset
 from .utils import with_probability, random_shift, random_rotate
 
 

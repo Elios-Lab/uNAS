@@ -1,4 +1,4 @@
-from config import PruningConfig, BoundConfig
+from uNAS.config import PruningConfig, BoundConfig
 from configs.cnn_chars74k_binary import training_config, search_config, search_algorithm
 
 training_config.pruning = PruningConfig(

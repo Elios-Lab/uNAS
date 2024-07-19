@@ -1,7 +1,8 @@
 import numpy as np
 
-from architecture import Architecture
-
+from uNAS.architecture import Architecture
+from uNAS.resource_models.graph import Graph
+from uNAS.resource_models.ops import Input, Dense
 
 class MlpArchitecture(Architecture):
     def __init__(self, architecture):
@@ -23,8 +24,7 @@ class MlpArchitecture(Architecture):
 
     def to_resource_graph(self, input_shape, num_classes, element_type=np.uint8, batch_size=1,
                           **kwargs):
-        from resource_models.graph import Graph
-        from resource_models.ops import Input, Dense
+
 
         g = Graph(element_type)
         with g.as_current():

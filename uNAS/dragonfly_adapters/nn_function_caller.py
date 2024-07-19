@@ -8,12 +8,12 @@ from dragonfly.exd.experiment_caller import CPFunctionCaller
 from dragonfly.exd.worker_manager import SyntheticWorkerManager
 from dragonfly.opt.gpb_acquisitions import maximise_acquisition, get_gp_sampler_for_parallel_strategy
 from dragonfly.utils.reporters import BasicReporter
-from dragonfly_adapters.neural_network import NeuralNetworkWrapper
+from uNAS.dragonfly_adapters.neural_network import NeuralNetworkWrapper
 from dragonfly.nn.nn_domains import NNDomain
 from dragonfly.exd.domains import CartesianProductDomain, IntegralDomain, EuclideanDomain
 
-from model_trainer import ModelTrainer
-from search_space import SearchSpace
+from uNAS.model_trainer import ModelTrainer
+from uNAS.search_space import SearchSpace
 
 from .kernel import get_distance_computer
 from .aging_ga_optimiser import build_aging_cp_ga_optimiser

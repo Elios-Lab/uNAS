@@ -3,9 +3,9 @@ from typing import Optional
 
 import tensorflow as tf
 
-from config import TrainingConfig
-from pruning import DPFPruning
-from utils import debug_mode
+from uNAS.config import TrainingConfig
+from uNAS.pruning import DPFPruning
+from uNAS.utils import debug_mode
 
 
 class ModelTrainer:

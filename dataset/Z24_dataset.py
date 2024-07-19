@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import shuffle
 
-from .dataset import Dataset
+from uNAS.dataset import Dataset
 from typing import Tuple
 
 

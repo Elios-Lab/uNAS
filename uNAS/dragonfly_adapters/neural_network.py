@@ -7,11 +7,11 @@ from scipy.sparse import dok_matrix
 from itertools import product
 from copy import deepcopy
 
-from architecture import Architecture
-from resource_models.graph import OperatorDesc
-from resource_models.models import peak_memory_usage, model_size, inference_latency, macs
-from resource_models.ops import DWConv2D, Conv2D, Pool, Dense, Conv1D, DWConv1D, Pool1D
-from search_space import SearchSpace
+from uNAS.architecture import Architecture
+from uNAS.resource_models.graph import OperatorDesc
+from uNAS.resource_models.models import peak_memory_usage, model_size, inference_latency, macs
+from uNAS.resource_models.ops import DWConv2D, Conv2D, Pool, Dense, Conv1D, DWConv1D, Pool1D
+from uNAS.search_space import SearchSpace
 
 
 def layer_group_types():

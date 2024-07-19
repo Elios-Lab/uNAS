@@ -1,9 +1,9 @@
 import tensorflow_addons as tfa
 
-from cnn import CnnSearchSpace
-from config import AgingEvoConfig, TrainingConfig, BoundConfig
+from uNAS.cnn import CnnSearchSpace
+from uNAS.config import AgingEvoConfig, TrainingConfig, BoundConfig
 from dataset import MNIST
-from search_algorithms import AgingEvoSearch
+from uNAS.search_algorithms import AgingEvoSearch
 
 search_algorithm = AgingEvoSearch
 

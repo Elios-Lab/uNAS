@@ -1,6 +1,6 @@
 from typing import List
 
-from search_space import SearchSpace, SchemaType, ArchType
+from uNAS.search_space import SearchSpace, SchemaType, ArchType
 from .mlp_random_generators import random_arch
 from .mlp_morphisms import produce_all_morphs
 from .mlp_schema import get_schema

@@ -1,4 +1,4 @@
-from search_algorithms import BayesOpt
+from uNAS.search_algorithms import BayesOpt
 
 
 class LocalBayesOpt(BayesOpt):

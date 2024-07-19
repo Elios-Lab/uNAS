@@ -4,7 +4,7 @@ import tensorflow as tf
 import tensorflow_addons as tfa
 from pathlib import Path
 
-from .dataset import Dataset
+from uNAS.dataset import Dataset
 from .utils import with_probability, random_shift, random_rotate
 
 

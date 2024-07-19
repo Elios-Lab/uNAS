@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
-from .dataset import Dataset
+from uNAS.dataset import Dataset
 from .utils import with_probability, random_shift, random_rotate
 
 

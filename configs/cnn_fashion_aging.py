@@ -1,10 +1,10 @@
 from keras.callbacks import LearningRateScheduler
 from tensorflow_addons.optimizers import SGDW
 
-from config import TrainingConfig, BoundConfig, AgingEvoConfig
+from uNAS.config import TrainingConfig, BoundConfig, AgingEvoConfig
 from dataset import FashionMNIST
-from cnn import CnnSearchSpace
-from search_algorithms import AgingEvoSearch
+from uNAS.cnn import CnnSearchSpace
+from uNAS.search_algorithms import AgingEvoSearch
 
 search_algorithm = AgingEvoSearch
 

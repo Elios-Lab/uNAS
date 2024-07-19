@@ -1,4 +1,4 @@
-from .dataset import Dataset
+from uNAS.dataset import Dataset
 from .cifar import CIFAR10
 from .mnist import FashionMNIST, MNIST
 from .visualwakewords import VisualWakeWords

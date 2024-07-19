@@ -1,31 +1,47 @@
 import numpy as np
 import tensorflow as tf
 
-from architecture import Architecture
+from uNAS.architecture import Architecture
+from uNAS.resource_models.graph import Graph
+from uNAS.resource_models.ops import Conv2D, DWConv2D, Dense, Pool, Add, Input
 
-
-class Cnn1DArchitecture(Architecture):
+class CnnArchitecture(Architecture):
+    """
+    A candidate architecture in the search process.
+    Internally, the architecture is represented as a set of nested dictionaries, describing each block and layer.
+    The representation can be converted to:
+    * A feature vector according to the schema (e.g. for the GP modelling) using `.to_feature_vector()`.
+    * A Keras model for training using `.to_keras_model()`.
+    * A resource graph model for computing resource usages using `.to_resource_graph()`.
+    A random architecture can be generated using `.random_arch(...)`.
+    """
     def __init__(self, architecture_dict):
+        # self.architecture is a nested dictionary. If a key starts with underscore,
+        # its value is predetermined by other parameters, but we still keep it as an
+        # entry for convenient referencing or passing information to morphs.
         self.architecture = architecture_dict
 
     def _assemble_a_network(self, input, num_classes, conv_layer,
-                        pooling_layer, dense_layer, add_layer, flatten_layer):
+                            pooling_layer, dense_layer, add_layer, flatten_layer):
         """
         Assembles a network architecture, starting at `input`, using factory functions for each
         layer type.
         :returns Output tensor of the network
         """
 
+
         def tie_up_pending_outputs(outputs):
             if len(outputs) == 1:
                 return outputs[0]
-            smallest_l = min(o.shape[1] for o in outputs)
+            smallest_h = min(o.shape[1] for o in outputs)
+            smallest_w = min(o.shape[2] for o in outputs)
             xs = []
             for o in outputs:
-                downsampling_l = int(round(o.shape[1] / smallest_l))
-                if downsampling_l > 1:
+                downsampling_h = int(round(o.shape[1] / smallest_h))
+                downsampling_w = int(round(o.shape[2] / smallest_w))
+                if downsampling_h > 1 or downsampling_w > 1:
                     o = pooling_layer(o, {
-                        "pool_size": downsampling_l,
+                        "pool_size": (downsampling_h, downsampling_w),
                         "type": "max"
                     })
                 xs.append(o)
@@ -42,9 +58,9 @@ class Cnn1DArchitecture(Architecture):
                 follow_up_with_1x1 = False
                 for j, l in enumerate(conv_block["layers"]):
                     if j == len(conv_block["layers"]) - 1:
-                        # Last layer in a block must produce the same shape as
+                        # Last layer in a block must produce the shame shape as
                         # the output of the previous block
-                        if l["type"] == "DWConv1D":
+                        if l["type"] == "DWConv2D":
                             # Depthwise convolution can't change the number of channels,
                             # so we'll need to follow up with an extra 1x1 convolution
                             follow_up_with_1x1 = True
@@ -54,7 +70,7 @@ class Cnn1DArchitecture(Architecture):
 
                 if follow_up_with_1x1:
                     x = conv_layer(x, {
-                        "type": "1x1Conv1D",
+                        "type": "1x1Conv2D",
                         "filters": previous_channels,
                         "has_bn": False,
                         "has_relu": False,
@@ -88,35 +104,35 @@ class Cnn1DArchitecture(Architecture):
         self.architecture["_final_dense"] = final_dense
         return x
 
-
     def to_keras_model(self, input_shape, num_classes, dropout=0.0, **kwargs):
         """
         Creates a Keras model for the candidate architecture.
         """
         from keras import Model
-        from keras.layers import Conv1D, DepthwiseConv1D, BatchNormalization, \
-            ReLU, Dense, Input, Add, Flatten, MaxPool1D, AvgPool1D, ZeroPadding1D, Dropout
+        from keras.layers import Conv2D, DepthwiseConv2D, BatchNormalization, \
+            ReLU, Dense, Input, Add, Flatten, MaxPool2D, AvgPool2D, ZeroPadding2D, Dropout
 
         i = Input(shape=input_shape)
 
         def conv_layer(x, l):
-            if l["has_prepool"] and x.shape[1] > 1:
-                pool_size = min(2, x.shape[1])
-                x = MaxPool1D(pool_size=pool_size)(x)
+            if l["has_prepool"] and (x.shape[1] > 1 or x.shape[2] > 1):
+                pool_size = (min(2, x.shape[1]), min(2, x.shape[2]))
+                x = MaxPool2D(pool_size=pool_size)(x)
 
-            kernel_size = 1 if l["type"] == "1x1Conv1D" else min(l["ker_size"], x.shape[1])
-            stride = 1 if l["type"] == "1x1Conv1D" or not l["1x_stride"] else 2
-            if l["type"] in ["Conv1D", "1x1Conv1D"]:
-                conv = Conv1D(filters=l["filters"],
-                            kernel_size=kernel_size,
-                            strides=stride,
-                            padding="valid")
+            kernel_size = 1 if l["type"] == "1x1Conv2D" else \
+                min(l["ker_size"], x.shape[1], x.shape[2])
+            stride = 1 if l["type"] == "1x1Conv2D" or not l["2x_stride"] else 2
+            if l["type"] in ["Conv2D", "1x1Conv2D"]:
+                conv = Conv2D(filters=l["filters"],
+                              kernel_size=kernel_size,
+                              strides=stride,
+                              padding="valid")
                 x = conv(x)
             else:
-                assert l["type"] == "DWConv1D"
-                conv = DepthwiseConv1D(kernel_size=kernel_size,
-                                    strides=stride,
-                                    padding="valid")
+                assert l["type"] == "DWConv2D"
+                conv = DepthwiseConv2D(kernel_size=kernel_size,
+                                       strides=stride,
+                                       padding="valid")
                 x = conv(x)
             if l["has_bn"]:
                 bn = BatchNormalization()
@@ -125,32 +141,38 @@ class Cnn1DArchitecture(Architecture):
                 x = ReLU()(x)
             l["_weights"] = [w.name for w in conv.trainable_weights]
             return x
-
+        
         def pooling_layer(x, l):
-            pool_size = l["pool_size"] if isinstance(l["pool_size"], int) else l["pool_size"][0]
-            pool_size = min(pool_size, x.shape[1])
+            if isinstance(l["pool_size"], int):
+                pool_h, pool_w = (l["pool_size"], l["pool_size"])
+            else:
+                pool_h, pool_w = l["pool_size"]
+            pool_size = (min(pool_h, x.shape[1]),
+                         min(pool_w, x.shape[2]))
             if l["type"] == "avg":
-                return AvgPool1D(pool_size)(x)
+                return AvgPool2D(pool_size)(x)
             else:
                 assert l["type"] == "max"
-                return MaxPool1D(pool_size)(x)
-
+                return MaxPool2D(pool_size)(x)
+    
         def dense_layer(x, l):
             if l["activation"] is not None and dropout > 0.0:
                 x = Dropout(dropout)(x)
             dense = Dense(units=l["units"],
-                        activation=l["activation"])
+                          activation=l["activation"])
             x = dense(x)
             l["_weights"] = [w.name for w in dense.trainable_weights]
             return x
 
         def add_layer(xs):
-            max_length = max(x.shape[1] for x in xs)
+            max_height = max(x.shape[1] for x in xs)
+            max_width = max(x.shape[2] for x in xs)
             os = []
             for x in xs:
-                l_diff = max_length - x.shape[1]
-                if l_diff > 0:
-                    x = ZeroPadding1D(padding=(0, l_diff))(x)
+                h_diff = max_height - x.shape[1]
+                w_diff = max_width - x.shape[2]
+                if w_diff > 0 or h_diff > 0:
+                    x = ZeroPadding2D(padding=((0, h_diff), (0, w_diff)))(x)
                 os.append(x)
             return Add()(os)
 
@@ -165,8 +187,7 @@ class Cnn1DArchitecture(Architecture):
         """
         Assembles a resource graph for the model, which can be used to compute runtime properties.
         """
-        from resource_models.graph import Graph
-        from resource_models.ops import Conv1D, DWConv1D, Dense, Pool1D, Add, Input
+
 
         pruned_weights = {w.name: w for w in pruned_weights} if pruned_weights else {}
 
@@ -188,31 +209,36 @@ class Cnn1DArchitecture(Architecture):
             return max(units, 1), sparse_size
 
         def conv_layer(x, l):
-            if l["has_prepool"] and x.shape[1] > 1:
-                pool_size = min(2, x.shape[1])
-                x = Pool1D(type="max", pool_size=pool_size)(x)
+            if l["has_prepool"] and (x.shape[1] > 1 or x.shape[2] > 1):
+                pool_size = (min(2, x.shape[1]), min(2, x.shape[2]))
+                x = Pool(type="max", pool_size=pool_size)(x)
 
-            kernel_size = 1 if l["type"] == "1x1Conv1D" else min(l["ker_size"], x.shape[1])
-            stride = 1 if l["type"] == "1x1Conv1D" or not l["1x_stride"] else 2
-            if l["type"] in ["Conv1D", "1x1Conv1D"]:
+            kernel_size = 1 if l["type"] == "1x1Conv2D" else \
+                min(l["ker_size"], x.shape[1], x.shape[2])
+            stride = 1 if l["type"] == "1x1Conv2D" or not l["2x_stride"] else 2
+            if l["type"] in ["Conv2D", "1x1Conv2D"]:
                 filters, sparse_kernel_length = process_pruned_weights(l)
-                x = Conv1D(filters=filters or l["filters"],
+                x = Conv2D(filters=filters or l["filters"],
                            kernel_size=kernel_size, stride=stride, padding="valid",
                            batch_norm=l["has_bn"], activation="relu" if l["has_relu"] else None,
                            sparse_kernel_size=sparse_kernel_length)(x)
             else:
-                assert l["type"] == "DWConv1D"
+                assert l["type"] == "DWConv2D"
                 _, sparse_kernel_length = process_pruned_weights(l)
-                x = DWConv1D(kernel_size=kernel_size, stride=stride,
+                x = DWConv2D(kernel_size=kernel_size, stride=stride,
                              padding="valid", batch_norm=l["has_bn"],
                              activation="relu" if l["has_relu"] else None,
                              sparse_kernel_size=sparse_kernel_length)(x)
             return x
 
         def pooling_layer(x, l):
-            pool_size = l["pool_size"] if isinstance(l["pool_size"], int) else l["pool_size"][0]
-            pool_size = min(pool_size, x.shape[1])
-            return Pool1D(pool_size=pool_size, type=l["type"])(x)
+            if isinstance(l["pool_size"], int):
+                pool_h, pool_w = (l["pool_size"], l["pool_size"])
+            else:
+                pool_h, pool_w = l["pool_size"]
+            pool_size = (min(pool_h, x.shape[1]),
+                         min(pool_w, x.shape[2]))
+            return Pool(pool_size=pool_size, type=l["type"])(x)
 
         def dense_layer(x, l):
             units, sparse_kernel_size = process_pruned_weights(l)

@@ -1,10 +1,10 @@
 import tensorflow_addons as tfa
 from keras.callbacks import LearningRateScheduler
 
-from config import TrainingConfig, AgingEvoConfig, BoundConfig
+from uNAS.config import TrainingConfig, AgingEvoConfig, BoundConfig
 from dataset import Chars74K
-from cnn import CnnSearchSpace
-from search_algorithms import AgingEvoSearch
+from uNAS.cnn import CnnSearchSpace
+from uNAS.search_algorithms import AgingEvoSearch
 
 search_algorithm = AgingEvoSearch
 

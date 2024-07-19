@@ -1,4 +1,4 @@
-from config import PruningConfig
+from uNAS.config import PruningConfig
 from configs.cnn_speech_commands_aging import training_config, bound_config, search_config, \
     search_algorithm
 

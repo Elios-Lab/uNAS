@@ -1,4 +1,4 @@
-from config import BoundConfig
+from uNAS.config import BoundConfig
 from configs.cnn_mnist_aging import search_algorithm, training_config, search_config
 
 bound_config = BoundConfig(

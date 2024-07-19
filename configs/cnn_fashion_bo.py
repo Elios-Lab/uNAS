@@ -1,9 +1,9 @@
 from keras.callbacks import LearningRateScheduler
 from tensorflow_addons.optimizers import AdamW
 
-from config import TrainingConfig, BayesOptConfig, BoundConfig
+from uNAS.config import TrainingConfig, BayesOptConfig, BoundConfig
 from dataset import FashionMNIST
-from cnn import CnnSearchSpace
+from uNAS.cnn import CnnSearchSpace
 
 training_config = TrainingConfig(
     dataset=FashionMNIST(),
