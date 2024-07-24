@@ -13,7 +13,6 @@ from uNAS.search_algorithms import BayesOpt
 
 from uNAS import uNAS
 
-import time
 
 
 def main():
@@ -29,21 +28,9 @@ def main():
     parser.add_argument("--seed", type=int, default=0, help="A seed for the global NumPy and TensorFlow random state")
     args = parser.parse_args()
 
+    unas = uNAS(args, log)
 
-    np.random.seed(args.seed)
-    tf.random.set_seed(args.seed)
-
-    gpus = tf.config.experimental.list_physical_devices("GPU")
-    for gpu in gpus:
-        tf.config.experimental.set_memory_growth(gpu, True)
-
-    if args.save_every <= 0:
-        raise argparse.ArgumentTypeError("Value for '--save-every' must be a positive integer.")
-
-    configs = {}
-    exec(Path(args.config_file).read_text(), configs)
-
-    uNAS(configs, log).run(args)
+    unas.run()
 
 
 if __name__ == "__main__":

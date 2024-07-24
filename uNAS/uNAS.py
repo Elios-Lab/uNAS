@@ -26,11 +26,14 @@ class uNAS:
     _dataset = None
     _search = None
     _log = None
+    _args = None
 
 
-    def __init__(self, configs, log):
-        self._configs = configs
+    def __init__(self, args, log):
+        self._configure_gpus()
+        self._configure_seeds(args.seed)
         self._log = log
+        self._args = args
 
 
     
@@ -54,9 +57,11 @@ class uNAS:
         search_space.input_shape = dataset.input_shape
         search_space.num_classes = dataset.num_classes
 
-        model_saver = ModelSaver(self._configs["model_saver_config"], self._configs["bound_config"])
+        ckpt_path = self._configs["search_config"].checkpoint_dir
 
-        self._search = algo(experiment_name="args.name" or "search",
+        model_saver = ModelSaver(self._configs["model_saver_config"], self._configs["bound_config"], ckpt_path=ckpt_path)
+
+        self._search = algo(experiment_name=self._args.name or "search",
                     search_config=self._configs["search_config"],
                     training_config=self._configs["training_config"],
                     
@@ -64,24 +69,31 @@ class uNAS:
         
         self._model_saver = model_saver
 
-    def run(self, args):
-        #self._configure_gpus()
-        self._configure_seeds(args.seed)
+
+    def _load_configs(self):
+        configs = {}
+        exec(Path(self._args.config_file).read_text(), configs)
+        self._configs = configs
+
+    def run(self):
+        self._load_configs()
         self._configure_search_algorithm()
 
-        if args.save_every <= 0:
+        if self._args.save_every <= 0:
             raise argparse.ArgumentTypeError("Value for '--save-every' must be a positive integer.")
 
-        if args.load_from and not os.path.exists(args.load_from):
+        if self._args.load_from and not os.path.exists(self._args.load_from):
             self._log.warning("Search state file to load from is not found, the search will start from scratch.")
-            args.load_from = None
+            self._args.load_from = None
 
-        self._search.search(load_from=args.load_from, save_every=args.save_every)
+        self._search.search(load_from=self._args.load_from, save_every=self._args.save_every)
 
-        print("Search complete")
+
 
         # Wait for the last model to be evaluated and saved
-        time.sleep(30)
+        time.sleep(30)      
+
+        print("Search complete")
         print("Dumping models")
         self._model_saver.save_models()
 

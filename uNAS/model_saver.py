@@ -21,16 +21,17 @@ class ModelSaver:
     mac_bound = None
 
 
-    def __init__(self, model_saver_config: ModelSaverConfig, constraint_bounds: BoundConfig):
+    def __init__(self, model_saver_config: ModelSaverConfig, constraint_bounds: BoundConfig, ckpt_path = None):
 
         self.stored_models = []
-        self.save_path = model_saver_config.save_path
         self.save_criteria = model_saver_config.save_criteria
         
         self.error_bound = constraint_bounds.error_bound
         self.peak_mem_bound = constraint_bounds.peak_mem_bound
         self.model_size_bound = constraint_bounds.model_size_bound
         self.mac_bound = constraint_bounds.mac_bound
+
+        self.ckpt_path = ckpt_path
 
         self.iteration = 0
         print("ModelSaver initialized")
@@ -39,7 +40,7 @@ class ModelSaver:
 
         
         base_path = os.getcwd()
-        self.full_path = os.path.join(base_path, self.save_path) 
+        self.full_path = os.path.join(base_path, self.ckpt_path) 
 
         if not os.path.exists(self.full_path):
             os.makedirs(self.full_path)
@@ -166,9 +167,17 @@ class ModelSaver:
 
     def save_models(self):
 
+        if self.save_criteria == "none":
+            print("No models to save")
+            return
+
         print("Saving models")
 
-        stored_models = pickle.load(open(self.full_path + "/temp_models.pkl", "rb"))
+        if os.path.exists(self.full_path + "/temp_models.pkl"):
+            stored_models = pickle.load(open(self.full_path + "/temp_models.pkl", "rb"))
+        else:
+            print("It was not possible to load the temp_models.pkl file")
+            return
 
 
         if len(stored_models) == 0:
