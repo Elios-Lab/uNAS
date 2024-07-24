@@ -8,6 +8,27 @@ from dataset import Dataset
 
 @dataclass
 class DistillationConfig:
+    """
+    Configuration for knowledge distillation from a teacher model to a student model.
+
+    The distillation loss is computed as the Kullback-Leibler divergence between the teacher's logits and the student's logits.
+
+    The distillation loss is added to the student's loss with a weight factor `alpha`.
+
+    The teacher's logits are softened by dividing them by a temperature factor `temperature`.
+
+    The distillation loss is computed as follows:
+        D_KL(softmax(teacher_logits / temperature), softmax(student_logits / temperature))
+
+    The distillation loss is added to the student's loss with a weight factor `alpha`.
+
+    The teacher model is loaded from the `distill_from` path.
+
+    Args:
+    - distill_from: str, Path to a tf.keras.Model.
+    - alpha: float, optional, Weight factor for the distillation loss (D_KL between teacher and student).
+    - temperature: float, optional, Softening factor for teacher's logits.
+    """
     distill_from: str  # a Path to a tf.keras.Model
     alpha: float = 0.3  # Weight factor for the distillation loss (D_KL between teacher and student)
     temperature: float = 1.0  # Softening factor for teacher's logits
@@ -15,6 +36,7 @@ class DistillationConfig:
 
 @dataclass
 class PruningConfig:
+
     structured: bool = False
     start_pruning_at_epoch: int = 0
     finish_pruning_by_epoch: int = None
@@ -41,7 +63,7 @@ class BayesOptConfig:
     # discard areas of the search space with low accuracy without taking other objectives into account.
     multifidelity: bool = False
     starting_points: int = 15
-    rounds: int = 200 #test 800
+    rounds: int = 800
     checkpoint_dir: str = "artifacts"
 
 
