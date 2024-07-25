@@ -132,7 +132,7 @@ class NeuralNetworkWrapper(DFNeuralNetwork):
             edge_list.extend((tensor_name_to_id[i.name], tensor_name_to_id[op.output.name]) for i in inputs)
             mass.append(macs(op))
 
-        # Invent a dummy layer for each output tensor
+        # Invent a Dummy2D layer for each output tensor
         for tensor in rg.outputs:
             i = len(layer_labels)
             layer_labels.append("op")

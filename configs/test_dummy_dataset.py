@@ -1,8 +1,8 @@
 import tensorflow as tf
 
 from uNAS.config import TrainingConfig, BayesOptConfig, BoundConfig, AgingEvoConfig, ModelSaverConfig
-from dataset.dummy_waveform import DummyWaveform
-from dataset.dummy import Dummy
+from uNAS.dummy_datasets import Dummy1D
+from uNAS.dummy_datasets import Dummy2D
 from uNAS.mlp import MlpSearchSpace
 from uNAS.cnn1d import Cnn1DSearchSpace
 from uNAS.cnn import CnnSearchSpace
@@ -10,7 +10,7 @@ from uNAS.search_algorithms import AgingEvoSearch, BayesOpt
 
 
 training_config = TrainingConfig(
-    dataset = DummyWaveform(samples_per_second= 1000, duration=1, length=100, difficulty=1, num_classes = 6), # Dummy((10,10,1),2,50),  #
+    dataset = Dummy1D(samples_per_second= 1000, duration=1, length=100, difficulty=1, num_classes = 6), # Dummy2D((10,10,1),2,50),  #
     optimizer = lambda: tf.optimizers.Adam(learning_rate=0.001),
     callbacks = lambda: [tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=4)],
     epochs = 1, # 75 

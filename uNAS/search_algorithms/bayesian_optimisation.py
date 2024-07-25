@@ -11,6 +11,26 @@ from uNAS.model_saver import ModelSaver
 
 
 class BayesOpt:
+    """
+    Bayesian Optimisation Search Algorithm
+    ===================================
+
+    This class is a wrapper around the Dragonfly Bayesian Optimisation search algorithm.
+
+    This class provides an easy-to-use interface for the Dragonfly Bayesian Optimization search algorithm. Here’s what it does:
+
+        - Optimizing Architectures: It helps find the best architecture for your dataset.
+
+        - Configuration and Constraints: The algorithm's search process is guided by the defined search space, training configuration, and constraints.
+
+    Args:
+    - experiment_name: str, name of the experiment
+    - search_config: BayesOptConfig, configuration for the search algorithm
+    - training_config: TrainingConfig, configuration for the training algorithm
+    - bound_config: BoundConfig, configuration for the bound algorithm
+    - model_saver: ModelSaver, a model saver object to save the best models during the search
+
+    """
     def __init__(self,
                  experiment_name: str,
                  search_config: BayesOptConfig,

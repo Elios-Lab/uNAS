@@ -68,6 +68,43 @@ class GPUTrainer:
 
 
 class AgingEvoSearch:
+    """
+    Aging Evolution Search Algorithm
+    ================================
+    
+    The Aging Evolution Search Algorithm is a multi-objective search algorithm that uses a combination of
+    error and resource constraints to search for the best architecture for a given dataset.
+    
+    The search algorithm is designed to evolve a population of architectures through several rounds. Here's how it works:
+
+        - Evaluating Architectures: The algorithm uses a multi-objective fitness function to assess each architecture's performance.
+
+        - Managing Parallel Evaluations: A scheduler is employed to handle the parallel evaluation processes efficiently.
+
+        - Saving Progress: To ensure continuity, the algorithm saves its state after a set number of rounds.
+
+        - Logging Bounds: It keeps track of the bounds of the architectures to ensure they remain within the specified constraints.
+
+        - Generating New Architectures: The search space is used to create new and diverse architectures.
+
+        - Training and Evaluation: A model trainer is utilized to train and evaluate the architectures.
+
+        - Saving Models: Once evaluated, the models are saved by the model saver for future reference.
+
+        - Setting Parameters: The algorithm's configuration is used to define the search parameters, tailoring the search process to specific needs.
+        
+        Args:
+            
+            experiment_name (str): The name of the experiment.
+            
+            search_config (AgingEvoConfig): The configuration for the Aging Evolution Search Algorithm.
+            
+            training_config (TrainingConfig): The configuration for the training process.
+            
+            bound_config (BoundConfig): The configuration for the bounds of the architectures.
+            
+            model_saver (ModelSaver): The model saver to save the models.
+            """
     def __init__(self,
                  experiment_name: str,
                  search_config: AgingEvoConfig,

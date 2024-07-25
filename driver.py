@@ -8,7 +8,7 @@ from pathlib import Path
 
 from uNAS import uNAS
 
-from uNAS.types import get_example_unas_config
+from uNAS.examples import get_example_unas_config, get_example_1dcnn_config
 
 
 
@@ -17,14 +17,12 @@ def main():
                         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     logger = logging.getLogger("Driver")
 
+    gpus = tf.config.experimental.list_physical_devices("GPU")
+    for gpu in gpus:
+        tf.config.experimental.set_memory_growth(gpu, True)
 
 
     unas_config = get_example_unas_config()
-    unas_config['config_file'] = 'configs/test_dummy_dataset.py'
-    unas_config['name'] = 'test_uNAS_module'
-    unas_config['load_from'] = None
-    unas_config['save_every'] = 5
-    unas_config['seed'] = 0
 
     uNAS.validate_config(unas_config)
 

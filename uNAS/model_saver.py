@@ -53,7 +53,7 @@ class ModelSaver:
     def __init__(self, model_saver_config: ModelSaverConfig, constraint_bounds: BoundConfig, ckpt_path = None):
 
         self.stored_models = []
-        self.save_criteria = model_saver_config.save_criteria
+        self.save_criteria = model_saver_config.save_criteria or "none"
         
         self.error_bound = constraint_bounds.error_bound
         self.peak_mem_bound = constraint_bounds.peak_mem_bound

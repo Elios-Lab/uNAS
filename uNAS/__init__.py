@@ -52,4 +52,5 @@ from .cnn1d import Cnn1DSearchSpace
 from .search_space import SearchSpace
 from .model_saver import ModelSaver
 from .utils import generate_nth_id, NumpyEncoder, num_gpus, debug_mode, Scheduler, quantised_accuracy, copy_weight
-from .types import get_example_unas_config
+from .examples import get_example_unas_config
+from .dummy_datasets import Dummy1D, Dummy2D

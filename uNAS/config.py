@@ -9,6 +9,9 @@ from dataset import Dataset
 @dataclass
 class DistillationConfig:
     """
+    DistillationConfig
+    ---------------
+
     Configuration for knowledge distillation from a teacher model to a student model.
 
     The distillation loss is computed as the Kullback-Leibler divergence between the teacher's logits and the student's logits.
@@ -36,7 +39,21 @@ class DistillationConfig:
 
 @dataclass
 class PruningConfig:
+    """
+    PruningConfig
+    ---------------
 
+    Configuration for structured pruning.
+    
+    The pruning is applied to the model's weights during training.
+
+    Args:
+    - structured: bool, optional, Whether to apply structured pruning. Default is False.
+    - start_pruning_at_epoch: int, optional, Epoch to start pruning. Default is 0.
+    - finish_pruning_by_epoch: int, optional, Epoch to finish pruning. Default is None.
+    - min_sparsity: float, optional, Minimum sparsity level. Default is 0.
+    - max_sparsity: float, optional, Maximum sparsity level. Default is 0.995.
+    """
     structured: bool = False
     start_pruning_at_epoch: int = 0
     finish_pruning_by_epoch: int = None
@@ -46,6 +63,22 @@ class PruningConfig:
 
 @dataclass
 class TrainingConfig:
+    """
+    TrainingConfig
+    ---------------
+    
+    Configuration for training a model.
+
+    Args:
+    - dataset: Dataset
+    - optimizer: Callable[[], tf.optimizers.Optimizer]
+    - callbacks: Callable[[], List[tf.keras.callbacks.Callback]]
+    - batch_size: int, optional, Default is 128.
+    - epochs: int, optional, Default is 75.
+    - distillation: Optional[DistillationConfig], optional, Default is None. No distillation if `None`.
+    - use_class_weight: bool, optional, Default is False. Compute and use class weights to re-balance the data.
+    - pruning: Optional[PruningConfig], optional, Default is None.
+    """
     dataset: Dataset
     optimizer: Callable[[], tf.optimizers.Optimizer]
     callbacks: Callable[[], List[tf.keras.callbacks.Callback]]
@@ -58,6 +91,21 @@ class TrainingConfig:
 
 @dataclass
 class BayesOptConfig:
+    """
+    BayesOptConfig
+    ---------------
+    
+    Configuration for Bayesian Optimisation.
+    
+    Args:
+    - search_space: SearchSpace
+    - multifidelity: bool, optional, Enables multi-fidelity optimisation for the accuracy/error model. Default is False.
+        discard areas of the search space with low accuracy without taking other objectives into account.
+    - starting_points: int, optional, Number of starting points for the optimisation. Default is 15.
+    - rounds: int, optional, Number of rounds for the optimisation. Default is 800.
+    - checkpoint_dir: str, optional, Path to the directory to store the checkpoints. Default is "artifacts".
+    """
+
     search_space: SearchSpace
     # Enables multi-fidelity optimisation for the accuracy/error model. Note that this can
     # discard areas of the search space with low accuracy without taking other objectives into account.
@@ -69,10 +117,25 @@ class BayesOptConfig:
 
 @dataclass
 class AgingEvoConfig:
+    """
+    AgingEvoConfig
+    ---------------
+    
+    Configuration for Aging Evolution.
+
+    Args:
+    - search_space: SearchSpace
+    - population_size: int, optional, Default is 100.
+    - sample_size: int, optional, Default is 25.
+    - initial_population_size: Optional[int], optional, Default is None. If None, equal to population_size.
+    - rounds: int, optional, Default is 2000.
+    - max_parallel_evaluations: Optional[int], optional, Default is None.
+    - checkpoint_dir: str, optional, Default is "artifacts".
+    """
     search_space: SearchSpace
     population_size: int = 100
     sample_size: int = 25
-    initial_population_size: Optional[int] = None  # if None, equal to population_size
+    initial_population_size: Optional[int] = None 
     rounds: int = 2000
     max_parallel_evaluations: Optional[int] = None
     checkpoint_dir: str = "artifacts"
@@ -80,8 +143,23 @@ class AgingEvoConfig:
 
 @dataclass
 class BoundConfig:
-    # NAS will attempt to find models whose metrics are below the specified bounds.
-    # Specify `None` if you're not interested in optimising a particular metric.
+    """
+    BoundConfig
+    ---------------
+    
+    Configuration for the constraints on the models.
+
+    NAS will attempt to find models whose metrics are below the specified bounds.
+
+    None means that the constraint is not considered.
+    
+    Args:
+    - error_bound: Optional[float], optional, Default is None.
+    - peak_mem_bound: Optional[int], optional, Default is None.
+    - model_size_bound: Optional[int], optional, Default is None.
+    - mac_bound: Optional[int], optional, Default is None.
+    """
+
     error_bound: Optional[float] = None
     peak_mem_bound: Optional[int] = None
     model_size_bound: Optional[int] = None
@@ -90,6 +168,15 @@ class BoundConfig:
 
 @dataclass
 class ModelSaverConfig:
+    """
+    ModelSaverConfig
+    ---------------
+    
+    Configuration for saving the models.
+    
+    Args:
+    - save_criteria: Optional[str], optional, Options are "all", "boundaries", "pareto", "none". Default is None.
+    """
+
     # The criteria to save the model. Options are "all", "boundaries", "pareto", "none".
     save_criteria: Optional[str] = None
-    save_path: Optional[str] = None

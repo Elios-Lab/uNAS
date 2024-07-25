@@ -68,20 +68,16 @@ class uNAS:
 
     def __init__(self, unas_config, log = None):
         self.validate_config(unas_config)
-        self._configure_gpus()
         self._configure_seeds(unas_config["seed"])
         self._log = log
         self._unas_config = unas_config
+        self._configs = unas_config["config"]
 
     
     def _configure_seeds(self, seed):
         np.random.seed(seed)
         tf.random.set_seed(seed)
 
-    def _configure_gpus(self):
-        gpus = tf.config.experimental.list_physical_devices("GPU")
-        for gpu in gpus:
-            tf.config.experimental.set_memory_growth(gpu, True)
 
     def _configure_search_algorithm(self):
         if "search_algorithm" not in self._configs:
@@ -106,14 +102,7 @@ class uNAS:
         
         self._model_saver = model_saver
 
-
-    def _load_configs(self):
-        configs = {}
-        exec(Path(self._unas_config["config_file"]).read_text(), configs)
-        self._configs = configs
-
     def run(self):
-        self._load_configs()
         self._configure_search_algorithm()
 
         if self._unas_config["save_every"] <= 0:
@@ -141,10 +130,7 @@ class uNAS:
         """
         Validate the configuration parameters.
         """
-        if "config_file" not in config:
-            raise Exception("Config file must be provided.")
-        if not os.path.exists(config["config_file"]):
-            raise Exception("Config file not found.")
+
         if config["name"] is None:
             raise Exception("Name must be provided.")
         if type(config["name"]) is not str:

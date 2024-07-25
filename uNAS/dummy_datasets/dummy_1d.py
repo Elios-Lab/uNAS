@@ -8,9 +8,11 @@ from uNAS.dataset import Dataset
 
 
 
-class DummyWaveform(Dataset):
+class Dummy1D(Dataset):
     """
-    A dataset class for generating dummy waveform data. There are two classes, sine wave and square wave (respectively, label 0 and 1), with a random phase.
+    Dummy1D Dataset
+    ===============
+    A dataset class for generating Dummy1D waveform data. There are two classes of sine waves with gaussian distribution around 250 Hz and 650 Hz and stdev equal to 130 (respectively, label 0 and 1).
 
     Args:
         samples_per_second (int): The number of samples per second.
