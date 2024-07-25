@@ -11,6 +11,28 @@ SchemaType = Dict[str, ValueType]
 
 
 class SearchSpace(ABC):
+    """
+    Abstract class for search spaces.
+
+    The search space is defined by the schema, which is a dictionary that defines the types of the hyperparameters
+    of the architecture.
+
+    The search space is travelled by the search algorithms to find the best architecture for the dataset.
+
+    Random morphisms are applied to the architectures to generate new architectures.
+
+    The architectures are converted to Keras models using the to_keras_model method.
+
+    The search space is defined by the schema, which is defined in the schema module.
+
+    The search space should implement the following methods:
+    - schema: returns the schema of the search space
+    - random_architecture: returns a random architecture from the search space
+    - produce_morphs: produces morphs of the architecture
+    - input_shape: returns the input shape of the architecture
+    - num_classes: returns the number of classes in the dataset
+
+    """
     @property
     @abstractmethod
     def schema(self) -> SchemaType:

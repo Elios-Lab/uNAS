@@ -13,10 +13,32 @@ Example:
 Here's a quick example to get a default configuration for uNAS:
 
     from uNAS import get_example_unas_config
+
     unas_config = get_example_unas_config()
+
     print(unas_config)
 
-For more detailed documentation and advanced usage, please refer to our online documentation at [Link to Documentation].
+
+Here a quick example on how to import and run uNAS:
+
+
+        from uNAS import uNAS
+
+        from uNAS.types import get_example_unas_config
+
+        import logging
+
+        config = get_example_unas_config()
+
+        config['config_file'] = '{your configuration file path}'
+
+        logger = logging.getLogger('Driver')
+
+        unas = uNAS(config, logger)
+
+        unas.run()
+
+For more detailed documentation and advanced usage, please refer to our online documentation at [TBD Link to Documentation].
 
 """
 

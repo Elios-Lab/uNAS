@@ -10,6 +10,27 @@ from functools import lru_cache
 
 
 class Dataset(ABC):
+    """
+    Dataset Class
+    =============
+    
+    This is the abstract class for the dataset. It should be inherited by the dataset class.
+
+    The dataset class should implement the following methods:
+    - train_dataset: returns the training dataset
+    - test_dataset: returns the testing dataset
+    - validation_dataset: returns the validation dataset
+    - num_classes: returns the number of classes in the dataset
+    - input_shape: returns the shape of the input data
+
+    The class also provides a class_weight method that returns the class weights for
+    the dataset. This is useful for imbalanced datasets.
+
+    The class also provides a _train_test_split method that can be used to split the dataset
+    into training and testing datasets. This method is used by the dataset class to split the
+    dataset into training and testing datasets. The method can be overridden by the dataset class
+    if a different splitting method is required.
+    """
     @abstractmethod
     def train_dataset(self) -> tf.data.Dataset:
         pass

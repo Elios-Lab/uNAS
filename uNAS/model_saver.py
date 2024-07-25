@@ -9,6 +9,35 @@ import csv
 import time
 
 class ModelSaver:
+    """
+    ModelSaver Class
+    =============
+
+    This class is responsible for saving the models that are generated during the search process.
+
+    The constructor takes a ModelSaverConfig object and a BoundConfig object as arguments.
+
+    ModelSaverConfig object:
+    - save_criteria: the criteria used to save the models. It can be one of the following:
+        - "all": save all models
+        - "soft_pareto": save only the models that are pareto efficient
+        - "boundaries": save only the models that respect the constraints
+        - "pareto": save only the models that are pareto efficient and respect the constraints
+        - "none": do not save any models
+
+    BoundConfig object:
+    - error_bound: the maximum error allowed for a model
+    - peak_mem_bound: the maximum peak memory usage allowed for a model
+    - model_size_bound: the maximum model size allowed for a model
+    - mac_bound: the maximum number of MACs allowed for a model
+
+
+    The class provides the following methods:
+    - evaluate_and_save: saves a model if it respects the constraints
+    - save_models: saves the models that were stored during the search process
+    - dump: prints the ModelSaver object
+
+    """
 
     stored_models = None
     save_path = None
@@ -54,14 +83,14 @@ class ModelSaver:
 
 
 
-    def pack_model(self, model, val_error, test_error, resource_features):
+    def _pack_model(self, model, val_error, test_error, resource_features):
         pmu, ms, macs = resource_features
 
         layers_config = [layer.get_config() for layer in model.layers]
 
         return {"model": model, "val_error": float(val_error), "test_error": float(test_error), "pmu": int(pmu), "ms": int(ms), "macs": int(macs), "layers_config": layers_config}
 
-    def convert_to_tflite(model, representative_dataset, output_file):
+    def _convert_to_tflite(model, representative_dataset, output_file):
         converter = tf.lite.TFLiteConverter.from_keras_model(model)
 
         converter.optimizations = [tf.lite.Optimize.DEFAULT]
@@ -75,29 +104,23 @@ class ModelSaver:
             with open(output_file, "wb") as f:
                 f.write(model_bytes)
 
-    def store_model(self, model_obj):
+    def _store_model(self, model_obj):
         model = model_obj.pop("model")
-
         model_name = "model_" + generate_nth_id(self.iteration) + ".h5"
-
         model.save(self.models_path + "/" + model_name)
-
         model_obj["model_name"] = model_name
-
         self.stored_models.append(model_obj)
-
         self.iteration += 1
-
 
         return len(self.stored_models)
     
 
-    def flush_models(self):
+    def _flush_models(self):
         print("Flushing models")
         pickle.dump(self.stored_models, open(self.full_path + "/temp_models.pkl", "wb"))
         
 
-    def check_respect_constraints(self, model_obj):
+    def _check_respect_constraints(self, model_obj):
         if self.peak_mem_bound is not None and model_obj["pmu"] > self.peak_mem_bound:
             return False
         if self.model_size_bound is not None and model_obj["ms"] > self.model_size_bound:
@@ -109,26 +132,26 @@ class ModelSaver:
 
         return True
 
-    def pareto_dominates(self, obj : dict, candidateObj: dict):
+    def _pareto_dominates(self, obj : dict, candidateObj: dict):
         if all(candidateObj[x] >= obj[x] for x in ['test_error', 'pmu', 'ms', 'macs']):
             return False
         better_in_at_least_one = any(candidateObj[x] < obj[x] for x in ['test_error', 'pmu', 'ms', 'macs'])
         return better_in_at_least_one
 
-    def is_pareto_efficient(self, new_model_obj, models_list = None):
+    def _is_pareto_efficient(self, new_model_obj, models_list = None):
         if models_list is None:
             models_list = self.stored_models
         if len(models_list) == 0:
             return True
 
-        if all((self.pareto_dominates(model, new_model_obj)) for model in models_list if model != new_model_obj):
+        if all((self._pareto_dominates(model, new_model_obj)) for model in models_list if model != new_model_obj):
             return True
         return False
 
-    def filter_pareto_efficient(self):
+    def _filter_pareto_efficient(self):
         pareto_efficient_objects = []
         for i in range(len(self.stored_models)):
-            if all(self.pareto_dominates(self.stored_models[j], self.stored_models[i]) for j in range(len(self.stored_models)) if i != j):
+            if all(self._pareto_dominates(self.stored_models[j], self.stored_models[i]) for j in range(len(self.stored_models)) if i != j):
                 pareto_efficient_objects.append(self.stored_models[i])
 
         for model in self.stored_models:
@@ -140,25 +163,25 @@ class ModelSaver:
     def evaluate_and_save(self, model, val_error, test_error, resource_features):
         print("Evaluating and saving model")
 
-        model_obj = self.pack_model(model, val_error, test_error, resource_features)
+        model_obj = self._pack_model(model, val_error, test_error, resource_features)
 
         if self.save_criteria == "all":
-            self.store_model(model_obj)
-            self.flush_models()
+            self._store_model(model_obj)
+            self._flush_models()
         elif self.save_criteria == "soft_pareto":
-            if self.is_pareto_efficient(model_obj):
-                self.store_model(model_obj)
-                self.stored_models = self.filter_pareto_efficient()
-                self.flush_models()
+            if self._is_pareto_efficient(model_obj):
+                self._store_model(model_obj)
+                self.stored_models = self._filter_pareto_efficient()
+                self._flush_models()
         elif self.save_criteria == "boundaries":
-            if self.check_respect_constraints(model_obj):
-                self.store_model(model_obj)
-                self.flush_models()
+            if self._check_respect_constraints(model_obj):
+                self._store_model(model_obj)
+                self._flush_models()
         elif self.save_criteria == "pareto":
-            if self.check_respect_constraints(model_obj) and self.is_pareto_efficient(model_obj):
-                self.store_model(model_obj)                
-                self.stored_models = self.filter_pareto_efficient()
-                self.flush_models()
+            if self._check_respect_constraints(model_obj) and self._is_pareto_efficient(model_obj):
+                self._store_model(model_obj)                
+                self.stored_models = self._filter_pareto_efficient()
+                self._flush_models()
         elif self.save_criteria == "none":
             pass
         else:
@@ -187,7 +210,7 @@ class ModelSaver:
 
 
         for stored_model in stored_models:
-            is_pareto = self.is_pareto_efficient(stored_model, stored_models)
+            is_pareto = self._is_pareto_efficient(stored_model, stored_models)
             stored_model["is_pareto"] = is_pareto
             metadatas.append(stored_model)
 

@@ -7,6 +7,22 @@ from .cnn_schema import get_schema
 
 
 class CnnSearchSpace(SearchSpace):
+    """
+    2D Convolutional Neural Network (CNN) search space for image classification.
+    ===============================================================================
+
+    This module contains the search space for 2D CNNs for image classification.
+    The search space is defined by the CnnSearchSpace class, which inherits from the SearchSpace class.
+
+    The search space is travelled by the search algorithms to find the best architecture for the dataset.
+
+    Random morphisms are applied to the architectures to generate new architectures. The morphisms are defined in the
+    cnn_morphisms module.
+
+    The architectures are converted to Keras models using the to_keras_model method.
+
+    The search space is defined by the schema, which is defined in the cnn_schema module.
+    """
     input_shape = None
     num_classes = None
 
