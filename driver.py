@@ -24,8 +24,6 @@ def main():
 
     unas_config = get_example_mlp_unas_setup()
 
-    uNAS.validate_setup(unas_config)
-
     unas = uNAS(unas_config, logger)
 
     unas.run()

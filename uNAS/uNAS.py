@@ -18,6 +18,10 @@ from uNAS.model_saver import ModelSaver
 
 import time
 
+from uNAS.config import DistillationConfig, PruningConfig, TrainingConfig, BayesOptConfig, AgingEvoConfig, BoundConfig, ModelSaverConfig
+from uNAS.search_algorithms import AgingEvoSearch, BayesOpt
+from uNAS.dataset import Dataset
+
 class uNAS:
     """
     uNAS Module
@@ -67,11 +71,12 @@ class uNAS:
 
 
     def __init__(self, unas_config, log = None):
-        self.validate_setup(unas_config)
-        self._configure_seeds(unas_config["seed"])
         self._log = log
         self._unas_config = unas_config
         self._configs = unas_config["config"]
+
+        self._validate_setup(self._unas_config)
+        self._configure_seeds(self._unas_config["seed"])
 
     
     def _configure_seeds(self, seed):
@@ -124,27 +129,82 @@ class uNAS:
         self._model_saver.save_models()
 
 
-    #this is a static method to validate the configuration params
-    @staticmethod
-    def validate_setup(config):
-        """
-        Validate the configuration parameters.
-        """
 
-        if config["name"] is None:
+    #@staticmethod
+    def _validate_setup(self, setup):
+        """
+        Validate the setup parameters.
+        """
+        self._log.info("Validating setup parameters")
+
+
+        if setup["name"] is None:
             raise Exception("Name must be provided.")
-        if type(config["name"]) is not str:
+        if type(setup["name"]) is not str:
             raise Exception("Name must be a string.")
-        if config["load_from"] is not None and not os.path.exists(config["load_from"]):
+        
+        if setup["load_from"] is not None and not os.path.exists(setup["load_from"]):
             raise Exception("Search state file to load from is not found.")
-        if type(config["save_every"]) is not int:
+        
+        if type(setup["save_every"]) is not int:
             raise Exception("Value for 'save-every' must be an integer.")
-        if config["save_every"] <= 0:
+        if setup["save_every"] <= 0:
             raise Exception("Value for 'save-every' must be a positive integer.")
-        if type(config["seed"]) is not int:
+        
+        if type(setup["seed"]) is not int:
             raise Exception("Value for 'seed' must be an integer.")
-        if config["seed"] < 0:
+        if setup["seed"] < 0:
             raise Exception("Value for 'seed' must be a non-negative integer.")
+        
+        if "config" not in setup:
+            raise Exception("Configuration must be provided.")
+        if type(setup["config"]) is not dict:
+            raise Exception("Configuration must be a dictionary.")
+        if "search_config" not in setup["config"]:
+            raise Exception("Search configuration must be provided.")
+        if "training_config" not in setup["config"]:
+            raise Exception("Training configuration must be provided.")
+        if "model_saver_config" not in setup["config"]:
+            raise Exception("Model saver configuration must be provided.")
+        if "bound_config" not in setup["config"]:
+            raise Exception("Bound configuration must be provided.")
+        if "search_algorithm" not in setup["config"]:
+            raise Exception("Search algorithm must be provided.")
+        
+        if type(setup["config"]["search_config"]) is not AgingEvoConfig and type(setup["config"]["search_config"]) is not BayesOptConfig:
+            raise Exception("Search configuration must be an instance of class AgingEvoConfig or BayesOptConfig.")
+        
+        if type(setup["config"]["training_config"]) is not TrainingConfig:
+            raise Exception("Training configuration must be an instance of class TrainingConfig.")
+        
+        if type(setup["config"]["model_saver_config"]) is not ModelSaverConfig:
+            raise Exception("Model saver configuration must be an instance of class ModelSaverConfig.")
+        
+        if type(setup["config"]["bound_config"]) is not BoundConfig:
+            raise Exception("Bound configuration must be an instance of class BoundConfig.")
+        
+        if setup["config"]["search_algorithm"] is not AgingEvoSearch and setup["config"]["search_algorithm"] is not BayesOpt:
+            raise Exception("Search algorithm must be an instance of class AgingEvoSearch or BayesOpt.")
+        
+        if setup["config"]["training_config"].dataset is None:
+            raise Exception("Dataset must be provided in training configuration.")
+        
+        if not isinstance(setup["config"]["training_config"].dataset, Dataset):
+            raise Exception("Dataset must be an instance of class Dataset.")
+        
+        if setup["config"]["training_config"].distillation is not None:
+            if not isinstance(setup["config"]["training_config"].distillation, DistillationConfig):
+                raise Exception("Distillation  must be an instance of class DistillationConfig or None.")
+            
+        if setup["config"]["training_config"].pruning is not None:
+            if not isinstance(setup["config"]["training_config"].pruning_config, PruningConfig):
+                raise Exception("Pruning must be an instance of class PruningConfig or None.")
+            
+
+        self._log.info("Setup parameters are valid!")
+        
+
+        
         
 
     

@@ -176,7 +176,6 @@ def get_example_2dcnn_config():
         'model_saver_config': model_saver_config
         }
 
-
 def get_example_mlp_config():
     """
     Returns an example configuration for the MLP module.
