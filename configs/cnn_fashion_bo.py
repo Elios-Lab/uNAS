@@ -3,7 +3,7 @@ from tensorflow_addons.optimizers import AdamW
 
 from uNAS.config import TrainingConfig, BayesOptConfig, BoundConfig
 from dataset import FashionMNIST
-from uNAS.cnn import CnnSearchSpace
+from uNAS.cnn2d import Cnn2DSearchSpace
 
 training_config = TrainingConfig(
     dataset=FashionMNIST(),
@@ -13,7 +13,7 @@ training_config = TrainingConfig(
 )
 
 search_config = BayesOptConfig(
-    search_space=CnnSearchSpace(),
+    search_space=Cnn2DSearchSpace(),
     starting_points=15,
     checkpoint_dir="artifacts/cnn_fashion"
 )

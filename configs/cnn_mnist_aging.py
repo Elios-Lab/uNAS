@@ -1,6 +1,6 @@
 import tensorflow_addons as tfa
 
-from uNAS.cnn import CnnSearchSpace
+from uNAS.cnn2d import Cnn2DSearchSpace
 from uNAS.config import AgingEvoConfig, TrainingConfig, BoundConfig
 from dataset import MNIST
 from uNAS.search_algorithms import AgingEvoSearch
@@ -16,7 +16,7 @@ training_config = TrainingConfig(
 )
 
 search_config = AgingEvoConfig(
-    search_space=CnnSearchSpace(),
+    search_space=Cnn2DSearchSpace(),
     checkpoint_dir="artifacts/cnn_mnist"
 )
 

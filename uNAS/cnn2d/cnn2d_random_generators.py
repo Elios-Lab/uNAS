@@ -1,10 +1,10 @@
 import numpy as np
 
-from .cnn_architecture import CnnArchitecture
-from .cnn_schema import get_schema
+from .cnn2d_architecture import Cnn2DArchitecture
+from .cnn2d_schema import get_schema
 
 
-def random_conv_layer_type(block_idx, layer_idx, layer_type, relu_prob=0.9, pre_pool_prob=0.25):
+def random_conv2d_layer_type(block_idx, layer_idx, layer_type, relu_prob=0.9, pre_pool_prob=0.25):
     i, j = block_idx, layer_idx
     schema = get_schema()
     layer = {"type": layer_type}
@@ -25,13 +25,13 @@ def random_conv_layer_type(block_idx, layer_idx, layer_type, relu_prob=0.9, pre_
     return layer
 
 
-def random_conv_layer(block_idx, layer_idx):
+def random_conv2d_layer(block_idx, layer_idx):
     schema = get_schema()
     layer_type = schema[f"conv{block_idx}-l{layer_idx}-type"].uniform_random_value()
-    return random_conv_layer_type(block_idx, layer_idx, layer_type)
+    return random_conv2d_layer_type(block_idx, layer_idx, layer_type)
 
 
-def random_conv_block(block_idx, num_layers=None):
+def random_conv2d_block(block_idx, num_layers=None):
     schema = get_schema()
 
     i = block_idx
@@ -41,13 +41,13 @@ def random_conv_block(block_idx, num_layers=None):
     }
     num_layers = num_layers or schema[f"conv{i}-num-layers"].uniform_random_value()
     for j in range(num_layers):
-        layer = random_conv_layer(i, j)
+        layer = random_conv2d_layer(i, j)
         block["layers"].append(layer)
 
     return block
 
 
-def random_pooling():
+def random_pooling_2d():
     schema = get_schema()
     return {
         "type": "avg" if schema["pool-is-avg"].uniform_random_value() else "max",
@@ -64,7 +64,7 @@ def random_dense_block(block_idx):
     }
 
 
-def random_arch(pooling_prob=0.9):
+def random_arch_2d(pooling_prob=0.9):
     """
     Generates a valid architecture by sampling free variables uniformly at random.
     :param pooling_prob: Probability of pooling
@@ -79,15 +79,15 @@ def random_arch(pooling_prob=0.9):
 
     num_conv_blocks = schema["num-conv-blocks"].uniform_random_value()
     for i in range(num_conv_blocks):
-        block = random_conv_block(i)
+        block = random_conv2d_block(i)
         arch["conv_blocks"].append(block)
 
     if np.random.random_sample() < pooling_prob:
-        arch["pooling"] = random_pooling()
+        arch["pooling"] = random_pooling_2d()
 
     num_dense_blocks = schema["num-dense-blocks"].uniform_random_value()
     for i in range(num_dense_blocks):
         block = random_dense_block(i)
         arch["dense_blocks"].append(block)
 
-    return CnnArchitecture(arch)
+    return Cnn2DArchitecture(arch)

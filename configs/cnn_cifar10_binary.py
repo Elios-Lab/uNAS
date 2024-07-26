@@ -3,7 +3,7 @@ from keras.callbacks import ReduceLROnPlateau, EarlyStopping
 
 from uNAS.config import TrainingConfig, BayesOptConfig, BoundConfig, PruningConfig, AgingEvoConfig
 from dataset import CIFAR10
-from uNAS.cnn import CnnSearchSpace
+from uNAS.cnn2d import Cnn2DSearchSpace
 from uNAS.search_algorithms import AgingEvoSearch
 
 search_algorithm = AgingEvoSearch
@@ -26,7 +26,7 @@ training_config = TrainingConfig(
 )
 
 search_config = AgingEvoConfig(
-    search_space=CnnSearchSpace(),
+    search_space=Cnn2DSearchSpace(),
     checkpoint_dir="artifacts/cnn_cifar10"
 )
 

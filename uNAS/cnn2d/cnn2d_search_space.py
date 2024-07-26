@@ -1,18 +1,18 @@
 from typing import List
 
 from uNAS.search_space import SearchSpace, ArchType, SchemaType
-from .cnn_morphisms import produce_all_morphs
-from .cnn_random_generators import random_arch
-from .cnn_schema import get_schema
+from .cnn2d_morphisms import produce_all_morphs
+from .cnn2d_random_generators import random_arch_2d
+from .cnn2d_schema import get_schema
 
 
-class CnnSearchSpace(SearchSpace):
+class Cnn2DSearchSpace(SearchSpace):
     """
     2D Convolutional Neural Network (CNN) search space for image classification.
     ===============================================================================
 
     This module contains the search space for 2D CNNs for image classification.
-    The search space is defined by the CnnSearchSpace class, which inherits from the SearchSpace class.
+    The search space is defined by the Cnn2DSearchSpace class, which inherits from the SearchSpace class.
 
     The search space is travelled by the search algorithms to find the best architecture for the dataset.
 
@@ -34,7 +34,7 @@ class CnnSearchSpace(SearchSpace):
         return get_schema()
 
     def random_architecture(self) -> ArchType:
-        return random_arch()
+        return random_arch_2d()
 
     def produce_morphs(self, arch: ArchType) -> List[ArchType]:
         return produce_all_morphs(arch)

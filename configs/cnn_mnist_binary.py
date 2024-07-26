@@ -4,7 +4,7 @@ from keras.callbacks import ReduceLROnPlateau, EarlyStopping
 
 from uNAS.config import TrainingConfig, BayesOptConfig, BoundConfig
 from dataset import MNIST
-from uNAS.cnn import CnnSearchSpace
+from uNAS.cnn2d import Cnn2DSearchSpace
 
 training_config = TrainingConfig(
     dataset=MNIST(binary=True),
@@ -15,7 +15,7 @@ training_config = TrainingConfig(
 )
 
 search_config = BayesOptConfig(
-    search_space=CnnSearchSpace(),
+    search_space=Cnn2DSearchSpace(),
     starting_points=10,
     checkpoint_dir="artifacts/cnn_mnist"
 )

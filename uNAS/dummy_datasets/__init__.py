@@ -1,6 +1,6 @@
 """Dummy datasets for testing purposes.
 
-This module contains two dummy datasets for testing purposes. The Dummy1D dataset is a 1D dataset for time series classification. The Dummy2D dataset is a 2D dataset for image classification.
+This module contains two dummy datasets for testing purposes. The Dummy1D dataset is a 1D dataset for time series classification. The Dummy2D dataset is a 2D dataset for image classification. The DummyTabular dataset is a tabular dataset for classification.
 
 The datasets are used to test the search algorithms and the search spaces.
 """
@@ -8,3 +8,4 @@ The datasets are used to test the search algorithms and the search spaces.
 
 from .dummy_1d import Dummy1D
 from .dummy_2d import Dummy2D
+from .dummy_tabular import DummyTabular

@@ -35,7 +35,7 @@ class uNAS:
 
     It exposes the following methods:
     - run: Run the μNAS tool
-    - validate_config: Validate the configuration parameters
+    - validate_setup: Validate the configuration parameters
 
     Usage example:
     --------------
@@ -67,7 +67,7 @@ class uNAS:
 
 
     def __init__(self, unas_config, log = None):
-        self.validate_config(unas_config)
+        self.validate_setup(unas_config)
         self._configure_seeds(unas_config["seed"])
         self._log = log
         self._unas_config = unas_config
@@ -114,19 +114,19 @@ class uNAS:
 
         self._search.search(load_from=self._unas_config["load_from"], save_every=self._unas_config["save_every"])
 
-
+        self._log.info("Wait for the last model to be evaluated")
 
         # Wait for the last model to be evaluated and saved
         time.sleep(30)      
 
-        print("Search complete")
-        print("Dumping models")
+        self._log.info("Search complete")
+        self._log.info("Dumping models")
         self._model_saver.save_models()
 
 
     #this is a static method to validate the configuration params
     @staticmethod
-    def validate_config(config):
+    def validate_setup(config):
         """
         Validate the configuration parameters.
         """

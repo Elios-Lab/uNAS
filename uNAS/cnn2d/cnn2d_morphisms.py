@@ -3,10 +3,10 @@ import numpy as np
 from typing import List
 from copy import deepcopy
 
-from .cnn_schema import get_schema
-from .cnn_architecture import CnnArchitecture
-from .cnn_random_generators import random_conv_block, random_conv_layer, random_pooling, \
-    random_dense_block, random_conv_layer_type
+from .cnn2d_schema import get_schema
+from .cnn2d_architecture import Cnn2DArchitecture
+from .cnn2d_random_generators import random_conv2d_block, random_conv2d_layer, random_pooling_2d, \
+    random_dense_block, random_conv2d_layer_type
 
 
 def remove_random_conv_block(arch):
@@ -35,7 +35,7 @@ def remove_conv_block(arch, idx):
 def add_random_block(arch):
     arch = deepcopy(arch)
     block_idx = len(arch["conv_blocks"])
-    arch["conv_blocks"].append(random_conv_block(block_idx, num_layers=1))
+    arch["conv_blocks"].append(random_conv2d_block(block_idx, num_layers=1))
     return arch
 
 
@@ -67,7 +67,7 @@ def add_conv_layer(arch, block_idx):
     arch = deepcopy(arch)
     block = arch["conv_blocks"][block_idx]
     layer_idx = len(block["layers"])
-    block["layers"].append(random_conv_layer(block_idx, layer_idx))
+    block["layers"].append(random_conv2d_layer(block_idx, layer_idx))
     return arch
 
 
@@ -75,7 +75,7 @@ def add_random_conv_layer(arch, block_idx):
     arch = deepcopy(arch)
     block = arch["conv_blocks"][block_idx]
     layer_idx = np.random.randint(len(block["layers"]))
-    block["layers"].insert(layer_idx, random_conv_layer(block_idx, layer_idx))
+    block["layers"].insert(layer_idx, random_conv2d_layer(block_idx, layer_idx))
     return arch
 
 
@@ -84,7 +84,7 @@ def change_pooling(arch):
     if arch["pooling"]:
         arch["pooling"] = None
     else:
-        arch["pooling"] = random_pooling()
+        arch["pooling"] = random_pooling_2d()
     return arch
 
 
@@ -137,7 +137,7 @@ def change_conv_layer_type(arch, block_idx, layer_idx):
     morphs = []
     for lt in layer_types:
         arch = deepcopy(arch)
-        arch["conv_blocks"][i]["layers"][j] = random_conv_layer_type(i, j, lt)
+        arch["conv_blocks"][i]["layers"][j] = random_conv2d_layer_type(i, j, lt)
         morphs.append(arch)
     return morphs
 
@@ -154,7 +154,7 @@ def change_filters(arch, block_idx, layer_idx, filters_adjustment):
     return arch
 
 
-def produce_all_morphs(arch: CnnArchitecture) -> List[CnnArchitecture]:
+def produce_all_morphs(arch: Cnn2DArchitecture) -> List[Cnn2DArchitecture]:
     schema = get_schema()
     parent = arch.architecture
 
@@ -224,4 +224,4 @@ def produce_all_morphs(arch: CnnArchitecture) -> List[CnnArchitecture]:
             if min_units <= dense_layer["units"] + d <= max_units:
                 morphs.append(change_dense_units(parent, i, d))
 
-    return [CnnArchitecture(m) for m in morphs]
+    return [Cnn2DArchitecture(m) for m in morphs]

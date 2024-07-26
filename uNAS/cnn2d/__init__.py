@@ -9,5 +9,5 @@ The module contains the following classes:
 - Cnn1DSearchSpace: defines the search space for 2D CNNs
 """
 
-from .cnn_architecture import CnnArchitecture
-from .cnn_search_space import CnnSearchSpace
+from .cnn2d_architecture import Cnn2DArchitecture
+from .cnn2d_search_space import Cnn2DSearchSpace

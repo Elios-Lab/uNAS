@@ -3,13 +3,13 @@ import tensorflow as tf
 
 
 from uNAS.architecture import Architecture
-from uNAS.cnn import CnnSearchSpace
+from uNAS.cnn2d import Cnn2DSearchSpace
 from uNAS.cnn1d import Cnn1DSearchSpace
 from uNAS.mlp import MlpSearchSpace
 from uNAS.resource_models.models import model_size, peak_memory_usage
 
 
-search_space_options = [MlpSearchSpace, Cnn1DSearchSpace, CnnSearchSpace]
+search_space_options = [MlpSearchSpace, Cnn1DSearchSpace, Cnn2DSearchSpace]
 
 def main():
     np.random.seed(0)

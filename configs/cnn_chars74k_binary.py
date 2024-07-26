@@ -1,7 +1,7 @@
 from tensorflow.python.keras.callbacks import LearningRateScheduler
 from tensorflow_addons.optimizers import SGDW
 
-from uNAS.cnn import CnnSearchSpace
+from uNAS.cnn2d import Cnn2DSearchSpace
 from uNAS.config import TrainingConfig
 from configs.cnn_chars74k_aging import bound_config, search_config, search_algorithm
 from dataset import Chars74K

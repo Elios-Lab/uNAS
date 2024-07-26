@@ -3,7 +3,7 @@ from keras.callbacks import LearningRateScheduler
 
 from uNAS.config import TrainingConfig, AgingEvoConfig, BoundConfig
 from dataset import Chars74K
-from uNAS.cnn import CnnSearchSpace
+from uNAS.cnn2d import Cnn2DSearchSpace
 from uNAS.search_algorithms import AgingEvoSearch
 
 search_algorithm = AgingEvoSearch
@@ -24,7 +24,7 @@ training_config = TrainingConfig(
 )
 
 search_config = AgingEvoConfig(
-    search_space=CnnSearchSpace(dropout=0.15),
+    search_space=Cnn2DSearchSpace(dropout=0.15),
     checkpoint_dir="artifacts/cnn_chars74k"
 )
 

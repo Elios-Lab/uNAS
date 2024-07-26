@@ -5,7 +5,7 @@ from uNAS.dummy_datasets import Dummy1D
 from uNAS.dummy_datasets import Dummy2D
 from uNAS.mlp import MlpSearchSpace
 from uNAS.cnn1d import Cnn1DSearchSpace
-from uNAS.cnn import CnnSearchSpace
+from uNAS.cnn2d import Cnn2DSearchSpace
 from uNAS.search_algorithms import AgingEvoSearch, BayesOpt
 
 
@@ -30,7 +30,7 @@ bound_config = BoundConfig(
 search_algorithm = BayesOpt
 
 search_config = BayesOptConfig(
-    search_space= Cnn1DSearchSpace(),  # CnnSearchSpace(), # MlpSearchSpace(),  #  
+    search_space= Cnn1DSearchSpace(),  # Cnn2DSearchSpace(), # MlpSearchSpace(),  #  
     starting_points=10,
     checkpoint_dir="artifacts/cnn_test_dummy_dataset_model_saver"
 )

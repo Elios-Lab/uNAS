@@ -2,7 +2,7 @@ from tensorflow.python.keras.callbacks import LearningRateScheduler
 from tensorflow_addons.optimizers import AdamW
 
 from uNAS.config import TrainingConfig, BoundConfig, AgingEvoConfig
-from uNAS.cnn import CnnSearchSpace
+from uNAS.cnn2d import Cnn2DSearchSpace
 from dataset.speech_commands import SpeechCommands
 from uNAS.search_algorithms import AgingEvoSearch
 
@@ -28,7 +28,7 @@ training_config = TrainingConfig(
 )
 
 search_config = AgingEvoConfig(
-    search_space=CnnSearchSpace(),
+    search_space=Cnn2DSearchSpace(),
     rounds=2000,
     checkpoint_dir="artifacts/cnn_speech_commands"
 )

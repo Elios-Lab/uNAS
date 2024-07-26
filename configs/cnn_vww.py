@@ -3,7 +3,7 @@ from keras.callbacks import ReduceLROnPlateau, EarlyStopping
 
 from uNAS.config import TrainingConfig, BayesOptConfig, BoundConfig
 from dataset import VisualWakeWords
-from uNAS.cnn import CnnSearchSpace
+from uNAS.cnn2d import Cnn2DSearchSpace
 
 training_config = TrainingConfig(
     dataset=VisualWakeWords("/datasets/COCO/2014/records"),
@@ -14,7 +14,7 @@ training_config = TrainingConfig(
 )
 
 search_config = BayesOptConfig(
-    search_space=CnnSearchSpace(),
+    search_space=Cnn2DSearchSpace(),
     starting_points=15,
     checkpoint_dir="artifacts/cnn_vww"
 )

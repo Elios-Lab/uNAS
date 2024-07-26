@@ -46,11 +46,11 @@ from .config import TrainingConfig, BayesOptConfig, BoundConfig, AgingEvoConfig,
 from .dataset import Dataset
 from .uNAS import uNAS
 from .search_algorithms import AgingEvoSearch, BayesOpt
-from .cnn import CnnSearchSpace
+from .cnn2d import Cnn2DSearchSpace
 from .mlp import MlpSearchSpace
 from .cnn1d import Cnn1DSearchSpace
 from .search_space import SearchSpace
 from .model_saver import ModelSaver
 from .utils import generate_nth_id, NumpyEncoder, num_gpus, debug_mode, Scheduler, quantised_accuracy, copy_weight
-from .examples import get_example_unas_config
+from .examples import get_example_1d_unas_setup, get_example_2d_unas_setup
 from .dummy_datasets import Dummy1D, Dummy2D

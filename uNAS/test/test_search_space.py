@@ -12,16 +12,16 @@ import sys
 sys.path.insert(0, './')
 
 
-from uNAS.cnn import CnnSearchSpace
+from uNAS.cnn2d import Cnn2DSearchSpace
 from uNAS.mlp import MlpSearchSpace
 from uNAS.cnn1d import Cnn1DSearchSpace
 from resource_models.models import peak_memory_usage, model_size, inference_latency
 
 
 @parameterized_class(("search_space", "input_shape", "num_classes"), [
-    (CnnSearchSpace(), (49, 40, 1), 12),
-    (CnnSearchSpace(), (32, 32, 3), 10),
-    (CnnSearchSpace(), (28, 28, 1), 10),
+    (Cnn2DSearchSpace(), (49, 40, 1), 12),
+    (Cnn2DSearchSpace(), (32, 32, 3), 10),
+    (Cnn2DSearchSpace(), (28, 28, 1), 10),
     (Cnn1DSearchSpace(), (49, 1), 2),
     (Cnn1DSearchSpace(), (150, 3), 4),
     (Cnn1DSearchSpace(), (20, 9), 10),

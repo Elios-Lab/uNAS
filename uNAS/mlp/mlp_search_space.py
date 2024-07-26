@@ -1,7 +1,7 @@
 from typing import List
 
 from uNAS.search_space import SearchSpace, SchemaType, ArchType
-from .mlp_random_generators import random_arch
+from .mlp_random_generators import random_arch_2d
 from .mlp_morphisms import produce_all_morphs
 from .mlp_schema import get_schema
 
@@ -31,7 +31,7 @@ class MlpSearchSpace(SearchSpace):
         return get_schema()
 
     def random_architecture(self) -> ArchType:
-        return random_arch()
+        return random_arch_2d()
 
     def produce_morphs(self, arch: ArchType) -> List[ArchType]:
         return produce_all_morphs(arch)

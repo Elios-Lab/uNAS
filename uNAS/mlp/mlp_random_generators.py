@@ -7,7 +7,7 @@ def random_layer(layer_idx):
     return {"units": schema[f"dense{layer_idx}-units"].uniform_random_value()}
 
 
-def random_arch():
+def random_arch_2d():
     schema = get_schema()
     num_layers = schema["num-dense-layers"].uniform_random_value()
     return MlpArchitecture([random_layer(i) for i in range(num_layers)])

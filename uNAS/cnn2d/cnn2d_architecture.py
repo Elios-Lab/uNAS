@@ -5,7 +5,7 @@ from uNAS.architecture import Architecture
 from uNAS.resource_models.graph import Graph
 from uNAS.resource_models.ops import Conv2D, DWConv2D, Dense, Pool, Add, Input
 
-class CnnArchitecture(Architecture):
+class Cnn2DArchitecture(Architecture):
     """
     A candidate architecture in the search process.
     Internally, the architecture is represented as a set of nested dictionaries, describing each block and layer.
@@ -13,7 +13,7 @@ class CnnArchitecture(Architecture):
     * A feature vector according to the schema (e.g. for the GP modelling) using `.to_feature_vector()`.
     * A Keras model for training using `.to_keras_model()`.
     * A resource graph model for computing resource usages using `.to_resource_graph()`.
-    A random architecture can be generated using `.random_arch(...)`.
+    A random architecture can be generated using `.random_arch_2d(...)`.
     """
     def __init__(self, architecture_dict):
         # self.architecture is a nested dictionary. If a key starts with underscore,

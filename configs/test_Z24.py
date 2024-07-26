@@ -32,7 +32,7 @@ bound_config = BoundConfig(
 search_algorithm = BayesOpt
 
 search_config = BayesOptConfig(
-    search_space= Cnn1DSearchSpace(),  # CnnSearchSpace(), # MlpSearchSpace(),  #  
+    search_space= Cnn1DSearchSpace(),  # Cnn2DSearchSpace(), # MlpSearchSpace(),  #  
     starting_points=10,
     checkpoint_dir="artifacts/cnn_test_dummy_dataset_model_saver"
 )
