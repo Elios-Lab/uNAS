@@ -1,8 +1,11 @@
 import tensorflow as tf
 import tensorflow_addons as tfa
-import matplotlib.pyplot as plt
 
 
+
+#import matplotlib.pyplot as plt
+
+'''
 def grid_visualise_25(dataset: tf.data.Dataset):
     plt.figure(figsize=(10, 10))
 
@@ -17,7 +20,7 @@ def grid_visualise_25(dataset: tf.data.Dataset):
             plt.imshow(img)
         plt.xlabel(f"Class {label}")
     plt.show()
-
+'''
 
 def with_probability(p, true, false):
     return tf.cond(tf.random.uniform([]) < p, true, false)
