@@ -15,7 +15,7 @@ sys.path.insert(0, './')
 from uNAS.cnn2d import Cnn2DSearchSpace
 from uNAS.mlp import MlpSearchSpace
 from uNAS.cnn1d import Cnn1DSearchSpace
-from resource_models.models import peak_memory_usage, model_size, inference_latency
+from uNAS.resource_models import peak_memory_usage, model_size, inference_latency
 
 
 @parameterized_class(("search_space", "input_shape", "num_classes"), [

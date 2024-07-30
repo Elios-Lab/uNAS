@@ -48,11 +48,12 @@ class PruningConfig:
     The pruning is applied to the model's weights during training.
 
     Args:
-    - structured: bool, optional, Whether to apply structured pruning. Default is False.
+    - structured: bool, optional, Whether to produce a sparse model (structured = False, default) or prune the model channel-wise (structured = True).
     - start_pruning_at_epoch: int, optional, Epoch to start pruning. Default is 0.
     - finish_pruning_by_epoch: int, optional, Epoch to finish pruning. Default is None.
-    - min_sparsity: float, optional, Minimum sparsity level. Default is 0.
-    - max_sparsity: float, optional, Maximum sparsity level. Default is 0.995.
+    - min_sparsity: float, optional, Minimum sparsity level, computed as the fraction of values (or channels, if structured = True) set to 0. Default is 0.
+    - max_sparsity: float, optional, Maximum sparsity level, computed as the fraction of values (or channels, if structured = True) set to 0. Default is 0.995.ù
+
     """
     structured: bool = False
     start_pruning_at_epoch: int = 0

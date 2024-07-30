@@ -9,9 +9,9 @@
       "type": "debugpy",
       "request": "launch",
       "program": "${file}",
-      "console": "integratedTerminal",
+      "console": "integratedTerminal"
       //"args": ["--name", "test_test_Z24_dataset", "configs/test_Z24.py"]
-      "args": ["--name", "test_uNAS_module", "configs/test_dummy_dataset.py"]
+      //"args": ["--name", "test_uNAS_module", "configs/test_dummy_dataset.py"]
     }
   ]
 }

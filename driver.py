@@ -8,7 +8,7 @@ from pathlib import Path
 
 from uNAS import uNAS
 
-from uNAS.examples import get_example_1d_unas_setup, get_example_2d_unas_setup, get_example_mlp_unas_setup
+from uNAS.examples import get_example_2d_unas_setup
 
 
 
@@ -22,9 +22,9 @@ def main():
         tf.config.experimental.set_memory_growth(gpu, True)
 
 
-    unas_config = get_example_mlp_unas_setup()
+    unas_setup = get_example_2d_unas_setup()
 
-    unas = uNAS(unas_config, logger)
+    unas = uNAS(unas_setup, logger)
 
     unas.run()
 

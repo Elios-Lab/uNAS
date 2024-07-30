@@ -197,7 +197,7 @@ class uNAS:
                 raise Exception("Distillation  must be an instance of class DistillationConfig or None.")
             
         if setup["config"]["training_config"].pruning is not None:
-            if not isinstance(setup["config"]["training_config"].pruning_config, PruningConfig):
+            if not isinstance(setup["config"]["training_config"].pruning, PruningConfig):
                 raise Exception("Pruning must be an instance of class PruningConfig or None.")
             
 

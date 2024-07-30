@@ -91,6 +91,8 @@ class ModelTrainer:
             check_logs_from_epoch = self.pruning.finish_pruning_by_epoch
             callbacks.append(pruning_cb)
 
+
+
         log = model.fit(train, epochs=epochs, validation_data=val,
                         verbose=1 if debug_mode() else 2,
                         callbacks=callbacks, class_weight=class_weight)
@@ -100,8 +102,14 @@ class ModelTrainer:
             .prefetch(tf.data.experimental.AUTOTUNE)
         _, test_acc = model.evaluate(test, verbose=0)
 
+
+        # the val_error have to take into account the restore_best_weights callback
+        # if pruning has been selected and the finish_pruning_by_epoch is greater or equal than the number of epochs, just consider the last epoch
+        # otherwise, consider the epoch with the best validation accuracy
+        val_error = 1.0 - log.history["val_accuracy"][-1] if self.pruning and self.pruning.finish_pruning_by_epoch >= epochs else 1.0 - max(log.history["val_accuracy"][check_logs_from_epoch:])
+
         return {
-            "val_error": 1.0 - max(log.history["val_accuracy"][check_logs_from_epoch:]),
+            "val_error": val_error,  # max(log.history["val_accuracy"][check_logs_from_epoch:]),  # test should be checked
             "test_error": 1.0 - test_acc,
             "pruned_weights": pruning_cb.weights if pruning_cb else None
         }
