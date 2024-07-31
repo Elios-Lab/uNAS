@@ -348,3 +348,27 @@ def get_example_1dcnn_aging_pruning_config():
         'model_saver_config': model_saver_config
         }
 
+
+
+'''
+
+def lr_schedule(epoch):
+    if 0 <= epoch < 35:
+        return 0.01
+    return 0.005
+
+
+training_config = TrainingConfig(
+    dataset=Chars74K("/datasets/chars74k", img_size=(48, 48)),
+    epochs=60,
+    batch_size=80,
+    optimizer=lambda: tfa.optimizers.SGDW(learning_rate=0.01, momentum=0.9, weight_decay=0.0001),
+    callbacks=lambda: [LearningRateScheduler(lr_schedule)],
+)
+
+search_config = BayesOptConfig(
+    search_space=Cnn2DSearchSpace(dropout=0.15),
+    checkpoint_dir="artifacts/cnn_chars74k"
+)
+
+'''

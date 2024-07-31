@@ -1,8 +1,11 @@
 scikit-learn
-tensorflow-addons
 ray
 dragonfly-opt
 
 #windows related dependencies
 tensorflow<2.11; sys_platform == 'win32'
 numpy==1.23.5; sys_platform == 'win32'
+
+#linux related dependencies
+tensorflow[and-cuda]; sys_platform == 'linux'
+numpy; sys_platform == 'linux'
