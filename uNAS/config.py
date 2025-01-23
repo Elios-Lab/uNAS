@@ -79,6 +79,7 @@ class TrainingConfig:
     - distillation: Optional[DistillationConfig], optional, Default is None. No distillation if `None`.
     - use_class_weight: bool, optional, Default is False. Compute and use class weights to re-balance the data.
     - pruning: Optional[PruningConfig], optional, Default is None.
+    - serialized_dataset: Optional[bool], optional, Default is False.
     """
     dataset: Dataset
     optimizer: Callable[[], tf.optimizers.Optimizer]
@@ -88,6 +89,7 @@ class TrainingConfig:
     distillation: Optional[DistillationConfig] = None  # No distillation if `None`
     use_class_weight: bool = False  # Compute and use class weights to re-balance the data
     pruning: Optional[PruningConfig] = None
+    serialized_dataset: Optional[bool] = False
 
 
 @dataclass
@@ -128,6 +130,7 @@ class AgingEvoConfig:
     - search_space: SearchSpace
     - population_size: int, optional, Default is 100.
     - sample_size: int, optional, Default is 25.
+    - serialized_dataset: Optional[bool], optional, Default is False.
     - initial_population_size: Optional[int], optional, Default is None. If None, equal to population_size.
     - rounds: int, optional, Default is 2000.
     - max_parallel_evaluations: Optional[int], optional, Default is None.
@@ -136,6 +139,7 @@ class AgingEvoConfig:
     search_space: SearchSpace
     population_size: int = 100
     sample_size: int = 25
+    serialized_dataset: Optional[bool] = False
     initial_population_size: Optional[int] = None 
     rounds: int = 2000
     max_parallel_evaluations: Optional[int] = None

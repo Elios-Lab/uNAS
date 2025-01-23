@@ -159,6 +159,10 @@ artifacts
 
 draft
 
+# dataset directory
+
+wake_vision
+
 # vscode
 
 .vscode

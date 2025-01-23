@@ -30,7 +30,7 @@ class EvaluatedPoint:
     resource_features: List[Union[int, float]]
 
 
-@ray.remote(num_gpus=0 if debug_mode() else 1, num_cpus=1 if debug_mode() else 6)
+@ray.remote(num_gpus=0 if debug_mode() else 0.2, num_cpus=1 if debug_mode() else 6)
 class GPUTrainer:
     def __init__(self, search_space, trainer, model_saver=None):
         self.trainer = trainer
@@ -65,6 +65,55 @@ class GPUTrainer:
         return EvaluatedPoint(point=point,
                               val_error=val_error, test_error=test_error,
                               resource_features=resource_features)
+
+
+@ray.remote(num_gpus=0 if debug_mode() else 0.3, num_cpus=1 if debug_mode() else 6)
+class SerializedGPUTrainer:
+    def __init__(self, search_space, trainer, model_saver=None):
+        self.trainer = trainer
+        self.ss = search_space
+        self.model_saver = model_saver
+
+        logging.basicConfig(level=logging.INFO,
+                            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
+    def evaluate(self, point):
+        log = logging.getLogger("Worker")
+
+        dataset_instance = self.trainer.dataset()
+        arch = point.arch
+
+        model = self.ss.to_keras_model(arch, dataset_instance.input_shape, dataset_instance.num_classes)
+        
+        results = self.trainer.train_and_eval(model, sparsity=point.sparsity)
+        val_error, test_error = results["val_error"], results["test_error"]
+
+        rg = self.ss.to_resource_graph(
+            arch, 
+            dataset_instance.input_shape, 
+            dataset_instance.num_classes,
+            pruned_weights=results["pruned_weights"]
+        )
+
+        unstructured_sparsity = self.trainer.config.pruning and not self.trainer.config.pruning.structured
+        resource_features = [
+            peak_memory_usage(rg), 
+            model_size(rg, sparse=unstructured_sparsity),
+            inference_latency(rg, compute_weight=1, mem_access_weight=0)
+        ]
+
+        log.info(f"Training complete: val_error={val_error:.4f}, test_error={test_error:.4f}, "
+                 f"resource_features={resource_features}.")
+        
+        if self.model_saver:
+            self.model_saver.evaluate_and_save(model, val_error, test_error, resource_features)
+
+        return EvaluatedPoint(
+            point=point,
+            val_error=val_error, 
+            test_error=test_error,
+            resource_features=resource_features
+        )
 
 
 class AgingEvoSearch:
@@ -143,6 +192,7 @@ class AgingEvoSearch:
         self.num_gpus = num_gpus
         self.max_parallel_evaluations = search_config.max_parallel_evaluations or num_gpus or 1 # Default to 1 worker
 
+        self.gpu_trainer = GPUTrainer if not search_config.serialized_dataset else SerializedGPUTrainer
         self.model_saver = model_saver
 
     def save_state(self, file):
@@ -210,11 +260,10 @@ class AgingEvoSearch:
             self.load_state(load_from)
 
         ray.init(local_mode=debug_mode())
-
         trainer = ray.put(self.trainer)
         ss = ray.put(self.config.search_space)
 
-        scheduler = Scheduler([GPUTrainer.remote(ss, trainer, self.model_saver)
+        scheduler = Scheduler([self.gpu_trainer.remote(ss, trainer, self.model_saver)
                                for _ in range(self.max_parallel_evaluations)])
     
         self.log.info(f"Searching with {self.max_parallel_evaluations} workers.")

@@ -7,7 +7,6 @@ from uNAS.config import TrainingConfig
 from uNAS.pruning import DPFPruning
 from uNAS.utils import debug_mode
 
-
 class ModelTrainer:
     """Trains Keras models according to the specified config."""
     def __init__(self, training_config: TrainingConfig):
@@ -21,20 +20,19 @@ class ModelTrainer:
                        epochs: Optional[int] = None, sparsity: Optional[float] = None):
         """
         Trains a Keras model and returns its validation set error (1.0 - accuracy).
-        :param model: A Keras model.
-        :param epochs: Overrides the duration of training.
-        :param sparsity: Desired sparsity level (for unstructured sparsity)
-        :returns Smallest error on validation set seen during training, the error on the test set,
-        pruned weights (if pruning was used)
         """
-        dataset = self.config.dataset
+        if not self.config.serialized_dataset:
+            dataset = self.config.dataset
+        else:
+            # Dynamically load datasets
+            dataset = self.config.dataset()
         batch_size = self.config.batch_size
         sparsity = sparsity or 0.0
 
         train = dataset.train_dataset() \
             .shuffle(batch_size * 8) \
             .batch(batch_size) \
-            .prefetch(tf.data.experimental.AUTOTUNE)
+            .prefetch(tf.data.AUTOTUNE)
 
         val = dataset.validation_dataset() \
             .batch(batch_size) \
@@ -65,7 +63,7 @@ class ModelTrainer:
             model = tf.keras.Model(inputs=i, outputs=stud_logits)
             model.add_loss(teaching_loss, inputs=True)
 
-        if self.dataset.num_classes == 2:
+        if dataset.num_classes == 2:
             loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
             accuracy = tf.keras.metrics.BinaryAccuracy(name="accuracy")
         else:
@@ -74,8 +72,7 @@ class ModelTrainer:
         model.compile(optimizer=self.config.optimizer(),
                       loss=loss, metrics=[accuracy])
 
-        # TODO: adjust metrics by class weight?
-        class_weight = {k: v for k, v in enumerate(self.dataset.class_weight())} \
+        class_weight = {k: v for k, v in enumerate(dataset.class_weight())} \
             if self.config.use_class_weight else None
         epochs = epochs or self.config.epochs
         callbacks = self.config.callbacks()
@@ -91,8 +88,6 @@ class ModelTrainer:
             check_logs_from_epoch = self.pruning.finish_pruning_by_epoch
             callbacks.append(pruning_cb)
 
-
-
         log = model.fit(train, epochs=epochs, validation_data=val,
                         verbose=1 if debug_mode() else 2,
                         callbacks=callbacks, class_weight=class_weight)
@@ -102,14 +97,18 @@ class ModelTrainer:
             .prefetch(tf.data.experimental.AUTOTUNE)
         _, test_acc = model.evaluate(test, verbose=0)
 
-
-        # the val_error have to take into account the restore_best_weights callback
-        # if pruning has been selected and the finish_pruning_by_epoch is greater or equal than the number of epochs, just consider the last epoch
-        # otherwise, consider the epoch with the best validation accuracy
         val_error = 1.0 - log.history["val_accuracy"][-1] if self.pruning and self.pruning.finish_pruning_by_epoch >= epochs else 1.0 - max(log.history["val_accuracy"][check_logs_from_epoch:])
 
         return {
-            "val_error": val_error,  # max(log.history["val_accuracy"][check_logs_from_epoch:]),  # test should be checked
+            "val_error": val_error,
             "test_error": 1.0 - test_acc,
             "pruned_weights": pruning_cb.weights if pruning_cb else None
         }
+
+    def __reduce__(self):
+        """
+        Exclude unpicklable attributes (like datasets) during serialization.
+        """
+        state = self.__dict__.copy()
+        state.pop("dataset", None)  # Exclude the dataset class
+        return (self.__class__, (self.config,), state)

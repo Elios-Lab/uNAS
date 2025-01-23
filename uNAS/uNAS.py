@@ -89,22 +89,33 @@ class uNAS:
             algo = BayesOpt
         else:
             algo = self._configs["search_algorithm"]
-    
+           
+        if self._configs["serialized_dataset"]:
+             # Dynamically create dataset instance
+            dataset =  self._configs["training_config"].dataset()
+        else:
+            dataset = self._configs["training_config"].dataset
+
         search_space = self._configs["search_config"].search_space
-        dataset = self._configs["training_config"].dataset
         search_space.input_shape = dataset.input_shape
         search_space.num_classes = dataset.num_classes
 
         ckpt_path = self._configs["search_config"].checkpoint_dir
 
-        model_saver = ModelSaver(self._configs["model_saver_config"], self._configs["bound_config"], ckpt_path=ckpt_path)
+        model_saver = ModelSaver(
+            self._configs["model_saver_config"],
+            self._configs["bound_config"],
+            ckpt_path=ckpt_path
+        )
 
-        self._search = algo(experiment_name=self._unas_config["name"] or "search",
-                    search_config=self._configs["search_config"],
-                    training_config=self._configs["training_config"],
-                    
-                    bound_config=self._configs["bound_config"], model_saver=model_saver)
-        
+        self._search = algo(
+            experiment_name=self._unas_config["name"] or "search",
+            search_config=self._configs["search_config"],
+            training_config=self._configs["training_config"],
+            bound_config=self._configs["bound_config"],
+            model_saver=model_saver
+        )
+
         self._model_saver = model_saver
 
     def run(self):
@@ -136,7 +147,6 @@ class uNAS:
         Validate the setup parameters.
         """
         self._log.info("Validating setup parameters")
-
 
         if setup["name"] is None:
             raise Exception("Name must be provided.")
@@ -171,10 +181,10 @@ class uNAS:
         if "search_algorithm" not in setup["config"]:
             raise Exception("Search algorithm must be provided.")
         
-        if type(setup["config"]["search_config"]) is not AgingEvoConfig and type(setup["config"]["search_config"]) is not BayesOptConfig:
+        if type(setup["config"]["search_config"]) not in [AgingEvoConfig, BayesOptConfig]:
             raise Exception("Search configuration must be an instance of class AgingEvoConfig or BayesOptConfig.")
         
-        if type(setup["config"]["training_config"]) is not TrainingConfig:
+        if not isinstance(setup["config"]["training_config"], TrainingConfig):
             raise Exception("Training configuration must be an instance of class TrainingConfig.")
         
         if type(setup["config"]["model_saver_config"]) is not ModelSaverConfig:
@@ -183,29 +193,30 @@ class uNAS:
         if type(setup["config"]["bound_config"]) is not BoundConfig:
             raise Exception("Bound configuration must be an instance of class BoundConfig.")
         
-        if setup["config"]["search_algorithm"] is not AgingEvoSearch and setup["config"]["search_algorithm"] is not BayesOpt:
+        if setup["config"]["search_algorithm"] not in [AgingEvoSearch, BayesOpt]:
             raise Exception("Search algorithm must be an instance of class AgingEvoSearch or BayesOpt.")
         
         if setup["config"]["training_config"].dataset is None:
             raise Exception("Dataset must be provided in training configuration.")
-        
-        if not isinstance(setup["config"]["training_config"].dataset, Dataset):
-            raise Exception("Dataset must be an instance of class Dataset.")
+
+        if setup["config"]["serialized_dataset"]:
+            # Updated validation for dataset callable
+            if not callable(setup["config"]["training_config"].dataset):
+                raise Exception("Dataset must be a callable that returns an instance of class Dataset.")
+            
+            dataset_instance = setup["config"]["training_config"].dataset()
+            if not isinstance(dataset_instance, Dataset):
+                raise Exception("The callable dataset must return an instance of class Dataset.")
+        else:
+            if not isinstance(setup["config"]["training_config"].dataset, Dataset):
+                raise Exception("Dataset must be an instance of class Dataset.")
         
         if setup["config"]["training_config"].distillation is not None:
             if not isinstance(setup["config"]["training_config"].distillation, DistillationConfig):
-                raise Exception("Distillation  must be an instance of class DistillationConfig or None.")
+                raise Exception("Distillation must be an instance of class DistillationConfig or None.")
             
         if setup["config"]["training_config"].pruning is not None:
             if not isinstance(setup["config"]["training_config"].pruning, PruningConfig):
                 raise Exception("Pruning must be an instance of class PruningConfig or None.")
-            
 
         self._log.info("Setup parameters are valid!")
-        
-
-        
-        
-
-    
-
