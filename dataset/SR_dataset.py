@@ -32,22 +32,31 @@ def datasetManagement():
         return audio
 
     # Elaborazione dei dati con padding
+    # def process_data(data, target_length=width):
+    #     data_list = []
+    #     for audio, label in data: 
+    #         # Aggiungi padding
+    #         padded_audio = pad_audio_sequence(audio, target_length)
+    #         label_array = label.numpy()
+    #         data_list.append({
+    #             'audio': padded_audio.tolist(),
+    #             'label': label_array
+    #         })
+    #     # Converti in DataFrame
+    #     df = pd.DataFrame(data_list)
+    #     x_data = np.array(df["audio"])
+    #     x_data = [np.array(x) for x in x_data]
+    #     y_data = np.array(df["label"])
+    #     return x_data, y_data
+    
     def process_data(data, target_length=width):
-        data_list = []
-        for audio, label in data.take(10): #ATTENZIONE NE PRENDE 10 PER TEST
-            # Aggiungi padding
+        x_data, y_data = [], []
+        for audio, label in data:
+            # Add padding
             padded_audio = pad_audio_sequence(audio, target_length)
-            label_array = label.numpy()
-            data_list.append({
-                'audio': padded_audio.tolist(),
-                'label': label_array
-            })
-        # Converti in DataFrame
-        df = pd.DataFrame(data_list)
-        x_data = np.array(df["audio"])
-        x_data = [np.array(x) for x in x_data]
-        y_data = np.array(df["label"])
-        return x_data, y_data
+            x_data.append(padded_audio)
+            y_data.append(label.numpy())
+        return np.array(x_data), np.array(y_data)
 
     # Prepara i dati di train, validation e test
     x_train, y_train = process_data(train_data, target_length=width)
