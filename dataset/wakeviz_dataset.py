@@ -3,7 +3,6 @@ import tensorflow as tf
 import random
 
 from uNAS.dataset import Dataset
-
 class WV_Dataset(Dataset):
     def __init__(self, data_dir, input_shape=(50, 50), fix_seeds=False):
         if fix_seeds:
@@ -22,33 +21,33 @@ class WV_Dataset(Dataset):
         self.train_ds = tf.keras.preprocessing.image_dataset_from_directory(
                 directory=f'{data_dir}/train_quality/',
                 labels='inferred',
-                label_mode='categorical',
+                label_mode='binary',
                 batch_size=None,
                 image_size=input_shape)
         
         self.val_ds = tf.keras.preprocessing.image_dataset_from_directory(
                 directory=f'{data_dir}/validation/',
                 labels='inferred',
-                label_mode='categorical',
+                label_mode='binary',
                 batch_size=None,
                 image_size=input_shape)
         
         self.test_ds = tf.keras.preprocessing.image_dataset_from_directory(
                 directory=f'{data_dir}/test/',
                 labels='inferred',
-                label_mode='categorical',
+                label_mode='binary',
                 batch_size=None,
                 image_size=input_shape)
 
     def train_dataset(self):
         ds = self.train_ds.shuffle(1000).map(lambda x, y: (self._data_augmentation(x, training=True), y))
-        return ds
+        return ds.prefetch(tf.data.AUTOTUNE)
 
     def validation_dataset(self):
-        return self.val_ds
+        return self.val_ds.prefetch(tf.data.AUTOTUNE)
 
     def test_dataset(self):
-        return self.test_ds
+        return self.test_ds.prefetch(tf.data.AUTOTUNE)
 
     @property
     def num_classes(self):

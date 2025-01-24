@@ -21,7 +21,7 @@ def main():
     for gpu in gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
 
-    unas_setup = get_wakeviz_setup(input_size = (50,50) , batch_size = 4, fix_seeds = False, serialized=False)
+    unas_setup = get_wakeviz_setup(input_size = (50,50) , batch_size = 8, fix_seeds = False, serialized=True)
 
     unas = uNAS(unas_setup, logger)
 

@@ -67,7 +67,7 @@ class GPUTrainer:
                               resource_features=resource_features)
 
 
-@ray.remote(num_gpus=0 if debug_mode() else 0.3, num_cpus=1 if debug_mode() else 6)
+@ray.remote(num_gpus=0 if debug_mode() else 1, num_cpus=1 if debug_mode() else 6)
 class SerializedGPUTrainer:
     def __init__(self, search_space, trainer, model_saver=None):
         self.trainer = trainer

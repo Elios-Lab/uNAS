@@ -5,8 +5,8 @@ import random
 # from datasets import load_dataset
 from uNAS.dataset import Dataset
 
-class WV_Dataset_Serialized(Dataset):
-    def __init__(self, cache_dir='/ssd/.data_cache/huggingface/datasets/', input_shape=(50, 50), fix_seeds=False):
+class WV_Dataset_HF(Dataset):
+    def __init__(self, data_dir='/ssd/.data_cache/huggingface/datasets/', input_shape=(50, 50), fix_seeds=False):
         if fix_seeds:
             np.random.seed(42)
             tf.random.set_seed(42)
@@ -14,7 +14,7 @@ class WV_Dataset_Serialized(Dataset):
 
         self._input_shape = input_shape
         self._num_classes = 2
-        self._wake_vision = None # load_dataset("Harvard-Edge/Wake-Vision", cache_dir=cache_dir)
+        self._wake_vision = None # load_dataset("Harvard-Edge/Wake-Vision", cache_dir=data_dir)
         self._data_preprocessing = tf.keras.Sequential([
             tf.keras.layers.Resizing(self._input_shape[0], self._input_shape[1])
         ])
