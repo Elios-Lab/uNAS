@@ -1,6 +1,8 @@
 scikit-learn
 ray
 dragonfly-opt
+matplotlib
+setuptools<60.0.0
 
 #windows related dependencies
 tensorflow<2.11; sys_platform == 'win32'

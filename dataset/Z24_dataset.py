@@ -19,7 +19,7 @@ timeserie_len = 65536
 def load_data(path, classes): 
     class_paths=[]
     for label in classes:
-        class_path = os.path.join(path, label, 'avt')
+        class_path = rf'{path}/{label}/avt/'
         class_paths.append(class_path)
 
 
