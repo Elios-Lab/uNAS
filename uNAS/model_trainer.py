@@ -31,11 +31,9 @@ class ModelTrainer:
 
         train = dataset.train_dataset() \
             .shuffle(batch_size * 8) \
-            .batch(batch_size) \
             .prefetch(tf.data.AUTOTUNE)
 
         val = dataset.validation_dataset() \
-            .batch(batch_size) \
             .prefetch(tf.data.experimental.AUTOTUNE)
         
         # TODO: check if this works, make sure we're excluding the last layer from the student
@@ -69,7 +67,7 @@ class ModelTrainer:
         else:
             loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
             accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name="accuracy")
-        model.compile(optimizer=self.config.optimizer(),
+        model.compile(optimizer=self.config.optimizer,
                       loss=loss, metrics=[accuracy])
 
         class_weight = {k: v for k, v in enumerate(dataset.class_weight())} \
@@ -93,7 +91,6 @@ class ModelTrainer:
                         callbacks=callbacks, class_weight=class_weight)
 
         test = dataset.test_dataset() \
-            .batch(batch_size) \
             .prefetch(tf.data.experimental.AUTOTUNE)
         _, test_acc = model.evaluate(test, verbose=0)
 

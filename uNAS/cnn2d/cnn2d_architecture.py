@@ -1,5 +1,7 @@
 import numpy as np
 import tensorflow as tf
+import tensorflow_model_optimization as tfmot #for Post Training Quantization (PTQ)
+
 
 from uNAS.architecture import Architecture
 from uNAS.resource_models.graph import Graph
@@ -20,6 +22,7 @@ class Cnn2DArchitecture(Architecture):
         # its value is predetermined by other parameters, but we still keep it as an
         # entry for convenient referencing or passing information to morphs.
         self.architecture = architecture_dict
+        self.quantize_model = tfmot.quantization.keras.quantize_model
 
     def _assemble_a_network(self, input, num_classes, conv_layer,
                             pooling_layer, dense_layer, add_layer, flatten_layer):
@@ -108,37 +111,38 @@ class Cnn2DArchitecture(Architecture):
         """
         Creates a Keras model for the candidate architecture.
         """
-        from keras import Model
-        from keras.layers import Conv2D, DepthwiseConv2D, BatchNormalization, \
-            ReLU, Dense, Input, Add, Flatten, MaxPool2D, AvgPool2D, ZeroPadding2D, Dropout
-
-        i = Input(shape=input_shape)
+        from tensorflow_model_optimization.python.core.keras.compat import keras
+        # from keras import Model
+        # from keras.layers import Conv2D, DepthwiseConv2D, BatchNormalization, \
+        #     ReLU, Dense, Input, Add, Flatten, MaxPool2D, AvgPool2D, ZeroPadding2D, Dropout
+            
+        i = keras.layers.Input(shape=input_shape, name="input_layer")
 
         def conv_layer(x, l):
             if l["has_prepool"] and (x.shape[1] > 1 or x.shape[2] > 1):
                 pool_size = (min(2, x.shape[1]), min(2, x.shape[2]))
-                x = MaxPool2D(pool_size=pool_size)(x)
+                x = keras.layers.MaxPool2D(pool_size=pool_size)(x)
 
             kernel_size = 1 if l["type"] == "1x1Conv2D" else \
                 min(l["ker_size"], x.shape[1], x.shape[2])
             stride = 1 if l["type"] == "1x1Conv2D" or not l["2x_stride"] else 2
             if l["type"] in ["Conv2D", "1x1Conv2D"]:
-                conv = Conv2D(filters=l["filters"],
+                conv = keras.layers.Conv2D(filters=l["filters"],
                               kernel_size=kernel_size,
                               strides=stride,
                               padding="valid")
                 x = conv(x)
             else:
                 assert l["type"] == "DWConv2D"
-                conv = DepthwiseConv2D(kernel_size=kernel_size,
+                conv = keras.layers.DepthwiseConv2D(kernel_size=kernel_size,
                                        strides=stride,
                                        padding="valid")
                 x = conv(x)
             if l["has_bn"]:
-                bn = BatchNormalization()
+                bn = keras.layers.BatchNormalization()
                 x = bn(x)
             if l["has_relu"]:
-                x = ReLU()(x)
+                x = keras.layers.ReLU()(x)
             l["_weights"] = [w.name for w in conv.trainable_weights]
             return x
         
@@ -150,15 +154,15 @@ class Cnn2DArchitecture(Architecture):
             pool_size = (min(pool_h, x.shape[1]),
                          min(pool_w, x.shape[2]))
             if l["type"] == "avg":
-                return AvgPool2D(pool_size)(x)
+                return keras.layers.AvgPool2D(pool_size)(x)
             else:
                 assert l["type"] == "max"
-                return MaxPool2D(pool_size)(x)
+                return keras.layers.MaxPool2D(pool_size)(x)
     
         def dense_layer(x, l):
             if l["activation"] is not None and dropout > 0.0:
-                x = Dropout(dropout)(x)
-            dense = Dense(units=l["units"],
+                x = keras.layers.Dropout(dropout)(x)
+            dense = keras.layers.Dense(units=l["units"],
                           activation=l["activation"])
             x = dense(x)
             l["_weights"] = [w.name for w in dense.trainable_weights]
@@ -172,15 +176,15 @@ class Cnn2DArchitecture(Architecture):
                 h_diff = max_height - x.shape[1]
                 w_diff = max_width - x.shape[2]
                 if w_diff > 0 or h_diff > 0:
-                    x = ZeroPadding2D(padding=((0, h_diff), (0, w_diff)))(x)
+                    x = keras.layers.ZeroPadding2D(padding=((0, h_diff), (0, w_diff)))(x)
                 os.append(x)
-            return Add()(os)
+            return keras.layers.Add()(os)
 
         def flatten_layer(x):
-            return Flatten()(x)
+            return keras.layers.Flatten()(x)
 
         o = self._assemble_a_network(i, num_classes, conv_layer, pooling_layer, dense_layer, add_layer, flatten_layer)
-        return Model(inputs=i, outputs=o)
+        return self.quantize_model(keras.models.Model(inputs=i, outputs=o))
 
     def to_resource_graph(self, input_shape, num_classes, element_type=np.uint8, batch_size=1,
                           pruned_weights=None):

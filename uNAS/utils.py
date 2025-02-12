@@ -104,7 +104,7 @@ def quantised_accuracy(model: tf.keras.Model, dataset: Dataset,
         for sample, _ in data:
             yield [sample]
 
-    model.inputs[0].set_shape((batch_size, ) + dataset.input_shape)
+    tf.keras.set_shape(model.inputs[0], (batch_size,) + dataset.input_shape)
     converter = tf.lite.TFLiteConverter.from_keras_model(model)
 
     converter.optimizations = [tf.lite.Optimize.DEFAULT]

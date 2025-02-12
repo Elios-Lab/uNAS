@@ -20,10 +20,11 @@ def get_wakeviz_config(input_size = (50,50) , batch_size = 512, serialized=False
 
     training_config = TrainingConfig(
         dataset=partial(WV_Dataset, 
-                    data_dir='/media/pigo/22F2EE2BF2EE0341/wake_vision/', 
+                    data_dir='/media/elios/DATA/wake_vision',
+                    batch_size=batch_size,
                     input_shape=input_size, 
                     fix_seeds=fix_seeds),
-        optimizer=lambda: tf.optimizers.SGD(learning_rate=0.001, weight_decay=5e-5),
+        optimizer="adam",
         batch_size=batch_size,
         epochs=10,
         callbacks=lambda: [tf.keras.callbacks.EarlyStopping(patience=15, verbose=1),
@@ -43,10 +44,10 @@ def get_wakeviz_config(input_size = (50,50) , batch_size = 512, serialized=False
     )
 
     bound_config = BoundConfig(
-    error_bound = 0.3,
+    error_bound = 0.15,
     peak_mem_bound = 250_000, 
     model_size_bound = 450_000,
-    mac_bound = 3_500_000
+    mac_bound = 300_000
     )
 
     model_saver_config = ModelSaverConfig(
