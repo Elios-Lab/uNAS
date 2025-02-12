@@ -8,6 +8,10 @@ __pycache__/
 
 *.jpg
 
+*.tf/
+
+*.tflite
+
 # Distribution / packaging
 .Python
 build/
