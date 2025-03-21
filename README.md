@@ -20,7 +20,7 @@ For a full description of methodology and experimental results, please see the a
 
 * 1D Convolutional Neural Networks are now supported
 * 2D Convolutional Neural Networks contain **hard-coded** (WIP) quantisation aware training (QAT) layer definition, as well as input and output model quantisation
-* Dynamic dataset loading is not supported and tested through the TensorFlow Dataset API
+* Dynamic dataset loading is now supported and tested through the TensorFlow Dataset API
 * Output format is Keras 2 model (.h5 format), `test.py` includes the conversion to TF Lite format
  
  
@@ -54,7 +54,7 @@ The μNAS pipeline consists of three main steps:
 
 By following these steps, the search can be customized for specific tasks and datasets while leveraging the μNAS framework to find optimal tiny models.
 
-## Additional Tools and File description (inside uNAS directory)
+## Additional Tools and File description (internal μNAS directory)
 
 - `cnn1d`/`cnn2d`/`mlp`: contains a search space description for convolutional neural networks / multilayer
  perceptrons, together with all allowed morphisms (changes) to a candidate architecture.
