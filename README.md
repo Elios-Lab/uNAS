@@ -31,6 +31,7 @@ For a full description of methodology and experimental results, please see the a
 μNAS uses Python 3.7+ with the environment described by `requirements.txt`. To install a specific version of TensorFlow, modify it and run `pip install -r requirements.txt`.
 
 *Changelog*
+
 The current version of μNAS has been deployed and tested for **Tensorflow 2.18.0** and **Python 3.10**. If the output models are not compatible with [ST developer tools](https://stm32ai-cs.st.com/home) even after TFlite conversion, please downgrade to lower Python and Tensorflow versions.
 
 - `configs`: example search configurations,
@@ -53,7 +54,7 @@ The μNAS pipeline consists of three main steps:
 
 By following these steps, the search can be customized for specific tasks and datasets while leveraging the μNAS framework to find optimal tiny models.
 
-## Navigating the code (inside uNAS folder)
+## Additional Tools and File description (inside uNAS directory)
 
 - `cnn1d`/`cnn2d`/`mlp`: contains a search space description for convolutional neural networks / multilayer
  perceptrons, together with all allowed morphisms (changes) to a candidate architecture.
