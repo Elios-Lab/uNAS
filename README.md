@@ -52,8 +52,6 @@ The μNAS pipeline consists of three main steps:
 
 3. Executing the `driver.py` script to initiate the algorithmic search. This script uses the defined configuration and dataset to begin the neural architecture search process.
 
-By following these steps, the search can be customized for specific tasks and datasets while leveraging the μNAS framework to find optimal tiny models.
-
 ## Additional Tools and File description (internal μNAS directory)
 
 - `cnn1d`/`cnn2d`/`mlp`: contains a search space description for convolutional neural networks / multilayer
