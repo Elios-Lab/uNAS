@@ -16,7 +16,7 @@ For a full description of methodology and experimental results, please see the a
 * add search times to the comparison table
 * update discussion on pruning, search convergence and the use of soft constraints
 
-*Changelog from origial implementation:*
+*Changelog from original implementation:*
 
 * 1D Convolutional Neural Networks are now supported
 * 2D Convolutional Neural Networks contain **hard-coded** (WIP) quantisation aware training (QAT) layer definition, as well as input and output model quantisation
