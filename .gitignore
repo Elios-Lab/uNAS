@@ -12,6 +12,8 @@ __pycache__/
 
 *.tflite
 
+*.vscode/
+
 # Distribution / packaging
 .Python
 build/
