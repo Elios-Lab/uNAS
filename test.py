@@ -6,25 +6,31 @@ import numpy as np
 from tqdm import tqdm
 import tensorflow_model_optimization as tfmot
 
-# Toggle this to switch between evaluating the .h5 model and the .tflite model
-USE_TFLITE = True
+USE_TFLITE = input("\nDo you want to test a TFLite model? (y/n): ").strip().lower() == 'y'
+if USE_TFLITE:
+    CONVERT_MODEL = input("\nDo you want to convert the model to TFLite first? (y/n): ").strip().lower() == 'y'
+    if CONVERT_MODEL:
+        model_name = input("\nPlease enter the converted model name (default: model_conv): ").strip()
+        if not model_name:
+            model_name = "model_conv"
 
-# Paths to models
-model_path = "/home/pigo/uNAS/abh_quality.h5"
-# model_path = "/home/pigo/uNAS/0_wv_k_8_c_5.tflite"
+model_path = ""
+while not os.path.isfile(model_path):
+    model_path = input("\nPlease enter the model path: ").strip()
+    if not os.path.isfile(model_path):
+        print("\nInvalid path. Please try again.")
 
 # Some hyperparameters
 img_size = (50, 50)
 batch_size = 1
 
-# Define paths to your dataset
-test_dir = "wake_vision/test"
-train_dir = "wake_vision/train_quality"
+test_dir = "/ssd/wake_vision/test"
+train_dir = "/ssd/wake_vision/train_quality"
 
 train_ds = tf.keras.utils.image_dataset_from_directory(
     train_dir,
     labels="inferred",
-    label_mode="binary",  # For binary classification
+    label_mode="binary",  
     image_size=img_size,
     batch_size=batch_size,
     shuffle=True,
@@ -35,7 +41,7 @@ train_ds = tf.keras.utils.image_dataset_from_directory(
 test_ds = tf.keras.utils.image_dataset_from_directory(
     test_dir,
     labels="inferred",
-    label_mode="binary",  # For binary classification
+    label_mode="binary",
     image_size=img_size,
     batch_size=batch_size,
     shuffle=False,
@@ -44,37 +50,37 @@ test_ds = tf.keras.utils.image_dataset_from_directory(
 test_ds = test_ds.map(lambda x, y: (x, y), num_parallel_calls=tf.data.AUTOTUNE).prefetch(tf.data.AUTOTUNE)
 
 if not USE_TFLITE:
-    ### EVALUATE .H5 MODEL ###
+    ### EVALUATE quantized .H5 MODEL ###
     print("\nEvaluating H5 model...")
-    # model = tk.models.load_model(model_path)
     with tfmot.quantization.keras.quantize_scope():
         model = tf.keras.models.load_model(model_path)
     model.evaluate(test_ds)
 else:
-    ### EVALUATE .TFLITE MODEL ###
-    print("\nEvaluating TFLite model...")    
-    with tfmot.quantization.keras.quantize_scope():
-        model = tf.keras.models.load_model(model_path)
-    
-    model_name = "quant_aaaabh_quality"
-    
-    def representative_dataset():
-        for data in train_ds.rebatch(1).take(150) :
-            yield [tf.dtypes.cast(data[0], tf.float32)]
-
-    converter = tf.lite.TFLiteConverter.from_keras_model(model)
-    converter.optimizations = [tf.lite.Optimize.DEFAULT]
-    converter.representative_dataset = representative_dataset
-    converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
-    converter.inference_input_type = tf.uint8
-    converter.inference_output_type = tf.uint8
-    tflite_model = converter.convert()
-
-    with open(model_name + ".tflite", 'wb') as f:
-        f.write(tflite_model)
+    if CONVERT_MODEL:
+        ### CONVERT TO .TFLITE MODEL ###
+        print("\nEvaluating TFLite model...")    
+        with tfmot.quantization.keras.quantize_scope():
+            model = tf.keras.models.load_model(model_path)
         
-    #Test quantized model
-    interpreter = tf.lite.Interpreter(model_name + '.tflite')
+        def representative_dataset():
+            for data in train_ds.rebatch(1).take(150) :
+                yield [tf.dtypes.cast(data[0], tf.float32)]
+
+        converter = tf.lite.TFLiteConverter.from_keras_model(model)
+        converter.optimizations = [tf.lite.Optimize.DEFAULT]
+        converter.representative_dataset = representative_dataset
+        converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+        converter.inference_input_type = tf.uint8
+        converter.inference_output_type = tf.uint8
+        tflite_model = converter.convert()
+
+        with open(model_name + ".tflite", 'wb') as f:
+            f.write(tflite_model)
+        
+    ### EVALUATE .TFLITE MODEL ###
+    if CONVERT_MODEL:
+        model_path = model_name + ".tflite"
+    interpreter = tf.lite.Interpreter(model_path)
     interpreter.allocate_tensors()
 
     output = interpreter.get_output_details()[0]  # Model has single output.
@@ -106,5 +112,4 @@ else:
         
         accuracy.update_state(label, scaled_output)
             
-    print(f"\n\nTflite model test accuracy (AMG): {correct/(correct+wrong)}\n")
     print(f"Tflite model test accuracy: {accuracy.result().numpy()}\n\n")

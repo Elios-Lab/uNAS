@@ -1,7 +1,6 @@
 import numpy as np
 import tensorflow as tf
-import tensorflow_model_optimization as tfmot #for Post Training Quantization (PTQ)
-
+import tensorflow_model_optimization as tfmot
 
 from uNAS.architecture import Architecture
 from uNAS.resource_models.graph import Graph

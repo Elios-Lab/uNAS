@@ -15,37 +15,48 @@ For a full description of methodology and experimental results, please see the a
 * add smaller CIFAR-10 model in the comparison table
 * add search times to the comparison table
 * update discussion on pruning, search convergence and the use of soft constraints
+
+*Changelog from origial implementation:*
+
+* 1D Convolutional Neural Networks are now supported
+* 2D Convolutional Neural Networks contain **hard-coded** (WIP) quantisation aware training (QAT) layer definition, as well as input and output model quantisation
+* Dynamic dataset loading is not supported and tested through the TensorFlow Dataset API
+* Output format is Keras 2 model (.h5 format), `test.py` includes the conversion to TF Lite format
  
  
 ## Usage 
  
 ### Setup
  
-μNAS uses Python 3.7+ with the environment described by `Pipfile`: to create an
- environment with all correct packages preinstalled simply run `pipenv install` in the cloned
- repository. 
+μNAS uses Python 3.7+ with the environment described by `requirements.txt`. To install a specific version of TensorFlow, modify it and run `pip install -r requirements.txt`.
 
-### To run
-
-The search is configured using Python configuration files (see `configs` for examples and 
-`config.py` for configuration file schema), which specify the search algorithm, how candidate models
-are going to be trained (incl. any pruning configuration) and resource bounds. μNAS can be invoked
-using `driver.py` which immediately delegates to the configured search algorithm. 
-
-For example, to search for MNIST models with Aging Evolution and structured pruning, run the
- following:
-
-`pipenv run python driver.py configs/cnn_mnist_struct_pru.py --name "example_mnist"`
-
-## Navigating the code
-
-- `cnn`/`mlp`: contains a search space description for convolutional neural networks / multilayer
- perceptrons, together with all allowed morphisms (changes) to a candidate architecture.
+*Changelog*
+The current version of μNAS has been deployed and tested for **Tensorflow 2.18.0** and **Python 3.10**. If the output models are not compatible with [ST developer tools](https://stm32ai-cs.st.com/home) even after TFlite conversion, please downgrade to lower Python and Tensorflow versions.
 
 - `configs`: example search configurations,
 
-- `dataset`: loaders for various datasets, conforming to the interface in `dataset/dataset
-.py`
+- `dataset`: loaders for various datasets, conforming to the interface in `dataset/cnn_wakeviz.py`
+
+- `search_state_processor.py`: loads and visualises μNAS search state files.
+
+- `train.py`/`test.py`: Helper scripts for continuining the training phase of the chosen model, converting it to TFlite and evaluating it.
+
+### Pipeline
+
+The μNAS pipeline consists of three main steps:
+
+1. Defining a search configuration script in the `configs` folder. This script specifies the search algorithm, training parameters, and resource constraints. Other task examples in the folder can be used for reference.
+
+2. Creating a dataset class in the `dataset` folder. This Python script should handle loading and preprocessing the data, either dynamically or statically, conforming to the interface in `dataset/dataset.py`.
+
+3. Executing the `driver.py` script to initiate the algorithmic search. This script uses the defined configuration and dataset to begin the neural architecture search process.
+
+By following these steps, the search can be customized for specific tasks and datasets while leveraging the μNAS framework to find optimal tiny models.
+
+## Navigating the code (inside uNAS folder)
+
+- `cnn1d`/`cnn2d`/`mlp`: contains a search space description for convolutional neural networks / multilayer
+ perceptrons, together with all allowed morphisms (changes) to a candidate architecture.
 
 - `dragonfly_adapters`: (Bayesian optimisation only) extra code to interoperate with 
 [Dragonfly](https://github.com/dragonfly/dragonfly). We found that we had to rely on internal
@@ -62,8 +73,6 @@ For example, to search for MNIST models with Aging Evolution and structured prun
  
 - `teachers`: a collection of teacher models for distillation.
 
-- `test`: automated sanity tests for search space implementations.
-
 - `model_trainer.py`: code for training candidate models.
 
 - `pruning.py`: implements [Dynamic Model Pruning with Feedback](https://openreview.net/forum?id=SJem8lSFwB)
@@ -71,8 +80,6 @@ For example, to search for MNIST models with Aging Evolution and structured prun
 
 - `generate_tflite_models.py`: generates random small models for latency benchmarking on a
  microcontroller.
- 
-- `search_state_processor.py`: loads and visualises μNAS search state files. 
  
 - `architecture.py`/`config.py`/`search_space.py`/`schema_types.py` base classes for candidate
  architectures, search configuration and free variables of the search space.
@@ -101,5 +108,3 @@ In the interest of storage, μNAS does not save final weights of discovered mode
  - The operator execution order that gives the smallest peak memory usage is not recorded in the
   model: use [`tflite-tools`](https://github.com/eliberis/tflite-tools) to optimise your tflite
    model prior to deploying.
-
-

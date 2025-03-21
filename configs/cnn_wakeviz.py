@@ -20,7 +20,7 @@ def get_wakeviz_config(input_size = (50,50) , batch_size = 512, serialized=False
 
     training_config = TrainingConfig(
         dataset=partial(WV_Dataset, 
-                    data_dir='/media/elios/DATA/wake_vision',
+                    data_dir='/ssd/wake_vision/',
                     batch_size=batch_size,
                     input_shape=input_size, 
                     fix_seeds=fix_seeds),
@@ -44,10 +44,10 @@ def get_wakeviz_config(input_size = (50,50) , batch_size = 512, serialized=False
     )
 
     bound_config = BoundConfig(
-    error_bound = 0.15,
+    error_bound = 0.2,
     peak_mem_bound = 250_000, 
-    model_size_bound = 450_000,
-    mac_bound = 300_000
+    model_size_bound = 500_000,
+    mac_bound = 1_000_000
     )
 
     model_saver_config = ModelSaverConfig(

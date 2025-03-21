@@ -24,13 +24,13 @@ img_size = (50, 50)
 batch_size = 64
 learning_rate = 0.0001
 epochs = 100
-model_name = "abh_quality"
-model_path = "/home/pigo/uNAS/model_aaaabh.h5"
+model_name = "your_model_name"
+model_path = "/path/to/your/model"
 
 # Define paths to your dataset
-train_dir = "wake_vision/train_quality"
-validation_dir = "wake_vision/validation"
-test_dir = "wake_vision/test"
+train_dir = "path/to/train"
+validation_dir = "path/to/validation"
+test_dir = "path/to/test"
 
 np.random.seed(42)
 tf.random.set_seed(42)
@@ -40,7 +40,7 @@ random.seed(42)
 train_ds = tf.keras.utils.image_dataset_from_directory(
     train_dir,
     labels="inferred",
-    label_mode="binary",  # For binary classification
+    label_mode="binary",  
     image_size=img_size,
     batch_size=batch_size,
     shuffle=True,
@@ -50,7 +50,7 @@ train_ds = tf.keras.utils.image_dataset_from_directory(
 val_ds = tf.keras.utils.image_dataset_from_directory(
     validation_dir,
     labels="inferred",
-    label_mode="binary",  # For binary classification
+    label_mode="binary",
     image_size=img_size,
     batch_size=batch_size,
     shuffle=False,
@@ -60,7 +60,7 @@ val_ds = tf.keras.utils.image_dataset_from_directory(
 test_ds = tf.keras.utils.image_dataset_from_directory(
     test_dir,
     labels="inferred",
-    label_mode="binary",  # For binary classification
+    label_mode="binary",
     image_size=img_size,
     batch_size=batch_size,
     shuffle=False,
