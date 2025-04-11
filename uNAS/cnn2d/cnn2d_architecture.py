@@ -1,6 +1,5 @@
 import numpy as np
 import tensorflow as tf
-import tensorflow_model_optimization as tfmot
 
 from uNAS.architecture import Architecture
 from uNAS.resource_models.graph import Graph
@@ -21,7 +20,7 @@ class Cnn2DArchitecture(Architecture):
         # its value is predetermined by other parameters, but we still keep it as an
         # entry for convenient referencing or passing information to morphs.
         self.architecture = architecture_dict
-        self.quantize_model = tfmot.quantization.keras.quantize_model
+        # self.quantize_model = tfmot.quantization.keras.quantize_model
 
     def _assemble_a_network(self, input, num_classes, conv_layer,
                             pooling_layer, dense_layer, add_layer, flatten_layer):
@@ -183,7 +182,7 @@ class Cnn2DArchitecture(Architecture):
             return keras.layers.Flatten()(x)
 
         o = self._assemble_a_network(i, num_classes, conv_layer, pooling_layer, dense_layer, add_layer, flatten_layer)
-        return self.quantize_model(keras.models.Model(inputs=i, outputs=o))
+        return keras.models.Model(inputs=i, outputs=o)
 
     def to_resource_graph(self, input_shape, num_classes, element_type=np.uint8, batch_size=1,
                           pruned_weights=None):

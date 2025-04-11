@@ -1,73 +1,64 @@
 import tensorflow as tf
-
 from uNAS.config import TrainingConfig, BayesOptConfig, BoundConfig, AgingEvoConfig, ModelSaverConfig
-from dataset.SR_dataset import SR_Dataset
+from dataset import SpeechCommandsDataset
 from uNAS.cnn1d import Cnn1DSearchSpace
-from uNAS.search_algorithms import AgingEvoSearch, BayesOpt
+from uNAS.search_algorithms import AgingEvoSearch
+from functools import partial
 
-def get_SR_setup(classes = [0,1,2,3,4,5,6,7,8,9,10,11]):
+
+def get_speechcommands_setup(input_size=(49, 13), batch_size=512, serialized=False, fix_seeds=False):
+       
     return {
-        'config': get_SR_config(classes=classes),
-        'name': 'SR_Test',
+        'config': get_speechcommands_config(input_size=input_size, batch_size=batch_size, serialized=serialized, fix_seeds=fix_seeds),
+        'name': 'speechcommands_cnn1d_search',
         'load_from': None,
-        'save_every': 10,
+        'save_every': 5,
         'seed': 0
-        }
+    }
 
-
-def get_SR_config(classes = [0,1,2,3,4,5,6,7,8,9,10,11]):
+def get_speechcommands_config(input_size=(49, 13), batch_size=512, serialized=False, fix_seeds=False):
     training_config = TrainingConfig(
-        dataset = SR_Dataset(classes = classes), 
-        optimizer = lambda: tf.optimizers.Adam(learning_rate=0.0001),
-        callbacks = lambda: [
-                            tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=25, verbose=1, min_lr=0.000001),  
-                            # tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, min_delta=0.5, verbose=1, restore_best_weights=True), 
-                            # tf.keras.callbacks.EarlyStopping(monitor='loss', patience=50, verbose=1, restore_best_weights=True), 
-                            tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=20, min_delta=0.005, verbose=1, restore_best_weights=True), 
-                            tf.keras.callbacks.TerminateOnNaN()
-                            ],
-        epochs = 100, 
-        batch_size = 8
+        dataset=partial(SpeechCommandsDataset, 
+                       data_dir='./speech_dataset', 
+                       sample_rate=16000,
+                       num_mfcc=input_size[1],
+                       fix_seeds=fix_seeds),
+        optimizer="adam",
+        batch_size=batch_size,
+        epochs=50,
+        callbacks=lambda: [
+            tf.keras.callbacks.EarlyStopping(patience=10, verbose=1, restore_best_weights=True),
+            tf.keras.callbacks.TerminateOnNaN()
+        ],
+        serialized_dataset=serialized
     )
-
-    bound_config = BoundConfig(
-    error_bound = 0.2,
-    peak_mem_bound = 5000000, 
-    model_size_bound = 10000000,
-    mac_bound = 5000000
-    )
-
-
-    '''
-    search_algorithm = BayesOpt
-
-    search_config = BayesOptConfig(
-        search_space= Cnn1DSearchSpace(),  # Cnn2DSearchSpace(), # MlpSearchSpace(),  #  
-        starting_points=10,
-        checkpoint_dir="artifacts/cnn_test_dummy_dataset_model_saver"
-    )
-    '''
-
 
     search_algorithm = AgingEvoSearch
 
     search_config = AgingEvoConfig(
-        search_space = Cnn1DSearchSpace(),
-        checkpoint_dir = "artifacts/SR_512smpl_11072024",
-        rounds = 1
+        search_space=Cnn1DSearchSpace(),
+        serialized_dataset=serialized,
+        checkpoint_dir="artifacts/1dcnn_speechcommands",
+        max_parallel_evaluations=1,
+        rounds=2000
     )
 
+    bound_config = BoundConfig(
+        error_bound=0.2,
+        peak_mem_bound=250_000,
+        model_size_bound=500_000,
+        mac_bound=1_000_000
+    )
 
     model_saver_config = ModelSaverConfig(
-        save_criteria = "all"
-        #save_path = "artifacts/SR_512smpl_11072024/model_saver"
+        save_criteria="all"
     )
-    
+
     return {
         'training_config': training_config,
         'bound_config': bound_config,
         'search_algorithm': search_algorithm,
         'search_config': search_config,
         'model_saver_config': model_saver_config,
-        'serialized_dataset': False
-        }
+        'serialized_dataset': serialized
+    }

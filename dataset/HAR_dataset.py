@@ -1,3 +1,4 @@
+import os
 import tensorflow as tf
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -5,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from uNAS.dataset import Dataset
 from typing import Tuple
 
-dataset_path= rf'/mnt/c/Users/Matteo/Desktop/Dottorato/uNAS_HAR/'
+dataset_path= rf'/media/elios/T7/uNasHAR/uNAS_HAR/'
 
 width=561
 def datasetManagement():

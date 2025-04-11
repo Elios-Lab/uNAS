@@ -13,7 +13,8 @@ class Cnn1DArchitecture(Architecture):
                         pooling_layer, dense_layer, add_layer, flatten_layer):
         """
         Assembles a network architecture, starting at `input`, using factory functions for each
-        layer type.
+        layer type. Supports multi-channel input (T,C).
+        :param input: Input tensor of shape (batch_size, timesteps, channels)
         :returns Output tensor of the network
         """
 
@@ -32,7 +33,7 @@ class Cnn1DArchitecture(Architecture):
                 xs.append(o)
             return add_layer(xs)
 
-        li = None  # Last seen input tensor a conv block
+        li = None
         xs = [input]
         for conv_block in self.architecture["conv_blocks"]:
             if conv_block["is_branch"]:
@@ -40,20 +41,16 @@ class Cnn1DArchitecture(Architecture):
                 previous_channels = xs[0].shape[-1]
 
                 x = li
-                follow_up_with_1x1 = False
+                _1x1 = False
                 for j, l in enumerate(conv_block["layers"]):
                     if j == len(conv_block["layers"]) - 1:
-                        # Last layer in a block must produce the same shape as
-                        # the output of the previous block
                         if l["type"] == "DWConv1D":
-                            # Depthwise convolution can't change the number of channels,
-                            # so we'll need to follow up with an extra 1x1 convolution
-                            follow_up_with_1x1 = True
+                            _1x1 = True
                         else:
                             l["filters"] = previous_channels
                     x = conv_layer(x, l)
 
-                if follow_up_with_1x1:
+                if _1x1:
                     x = conv_layer(x, {
                         "type": "1x1Conv1D",
                         "filters": previous_channels,
@@ -93,10 +90,14 @@ class Cnn1DArchitecture(Architecture):
     def to_keras_model(self, input_shape, num_classes, dropout=0.0, **kwargs):
         """
         Creates a Keras model for the candidate architecture.
+        :param input_shape: Tuple of (timesteps, channels)
         """
         from keras import Model
         from keras.layers import Conv1D, DepthwiseConv1D, BatchNormalization, \
-            ReLU, Dense, Input, Add, Flatten, MaxPool1D, AvgPool1D, ZeroPadding1D, Dropout
+            ReLU, Dense, Input, Add, Flatten, MaxPool1D, AvgPool1D, ZeroPadding1D, Dropout, Reshape
+
+        if len(input_shape) != 2:
+            raise ValueError(f"Input shape must be (timesteps, channels), got {input_shape}")
 
         i = Input(shape=input_shape)
 
@@ -107,42 +108,39 @@ class Cnn1DArchitecture(Architecture):
 
             kernel_size = 1 if l["type"] == "1x1Conv1D" else min(l["ker_size"], x.shape[1])
             stride = 1 if l["type"] == "1x1Conv1D" or not l["1x_stride"] else 2
+
             if l["type"] in ["Conv1D", "1x1Conv1D"]:
-                conv = Conv1D(filters=l["filters"],
-                            kernel_size=kernel_size,
-                            strides=stride,
-                            padding="valid")
-                x = conv(x)
+                x = Conv1D(filters=l["filters"],
+                          kernel_size=kernel_size,
+                          strides=stride,
+                          padding="same")(x)
             else:
-                assert l["type"] == "DWConv1D"
-                conv = DepthwiseConv1D(kernel_size=kernel_size,
-                                    strides=stride,
-                                    padding="valid")
-                x = conv(x)
+                x = DepthwiseConv1D(kernel_size=kernel_size,
+                                   strides=stride,
+                                   padding="same",
+                                   depth_multiplier=1)(x)
+
             if l["has_bn"]:
-                bn = BatchNormalization()
-                x = bn(x)
+                x = BatchNormalization()(x)
             if l["has_relu"]:
                 x = ReLU()(x)
-            l["_weights"] = [w.name for w in conv.trainable_weights]
             return x
 
         def pooling_layer(x, l):
             pool_size = l["pool_size"] if isinstance(l["pool_size"], int) else l["pool_size"][0]
             pool_size = min(pool_size, x.shape[1])
             if l["type"] == "avg":
-                return AvgPool1D(pool_size)(x)
+                x = AvgPool1D(pool_size=pool_size, padding="same")(x)
             else:
-                assert l["type"] == "max"
-                return MaxPool1D(pool_size)(x)
+                x = MaxPool1D(pool_size=pool_size, padding="same")(x)
+            return x
 
         def dense_layer(x, l):
-            if l["activation"] is not None and dropout > 0.0:
+            if len(x.shape) > 2:
+                x = Flatten()(x)
+            if dropout > 0.0:
                 x = Dropout(dropout)(x)
-            dense = Dense(units=l["units"],
-                        activation=l["activation"])
-            x = dense(x)
-            l["_weights"] = [w.name for w in dense.trainable_weights]
+            x = Dense(units=l["units"], activation=l["activation"])(x)
             return x
 
         def add_layer(xs):
@@ -153,13 +151,19 @@ class Cnn1DArchitecture(Architecture):
                 if l_diff > 0:
                     x = ZeroPadding1D(padding=(0, l_diff))(x)
                 os.append(x)
-            return Add()(os)
+            result = Add()(os)
+            return result
 
         def flatten_layer(x):
-            return Flatten()(x)
+            if len(x.shape) > 2:
+                x = Flatten()(x)
+            return x
 
         o = self._assemble_a_network(i, num_classes, conv_layer, pooling_layer, dense_layer, add_layer, flatten_layer)
-        return Model(inputs=i, outputs=o)
+        model = Model(inputs=i, outputs=o)
+        
+        model.summary()
+        return model
 
     def to_resource_graph(self, input_shape, num_classes, element_type=np.uint8, batch_size=1,
                           pruned_weights=None):

@@ -31,9 +31,11 @@ class ModelTrainer:
 
         train = dataset.train_dataset() \
             .shuffle(batch_size * 8) \
+            .batch(batch_size)\
             .prefetch(tf.data.AUTOTUNE)
 
         val = dataset.validation_dataset() \
+            .batch(batch_size)\
             .prefetch(tf.data.experimental.AUTOTUNE)
         
         # TODO: check if this works, make sure we're excluding the last layer from the student
@@ -91,6 +93,7 @@ class ModelTrainer:
                         callbacks=callbacks, class_weight=class_weight)
 
         test = dataset.test_dataset() \
+            .batch(batch_size)\
             .prefetch(tf.data.experimental.AUTOTUNE)
         _, test_acc = model.evaluate(test, verbose=0)
 

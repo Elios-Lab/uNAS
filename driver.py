@@ -10,6 +10,8 @@ from uNAS import uNAS
 #from configs.test_dummy_dataset import get_dummy_2D_setup
 #from configs.test_DIA import get_DIA_setup
 from configs.cnn_wakeviz import get_wakeviz_setup
+from configs.test_SR import get_speechcommands_setup
+from configs.test_HAR import get_HAR_setup
 
 
 def main():
@@ -21,10 +23,9 @@ def main():
     for gpu in gpus:
         tf.config.experimental.set_memory_growth(gpu, True)
 
-    unas_setup = get_wakeviz_setup(input_size=(50,50) , batch_size=64, serialized=True, fix_seeds=True)
-
+    # Input shape should be (timesteps, features, channels)
+    unas_setup = get_speechcommands_setup(input_size=(49, 13), batch_size=64, serialized=True, fix_seeds=True)
     unas = uNAS(unas_setup, logger)
-
     unas.run()
 
 
