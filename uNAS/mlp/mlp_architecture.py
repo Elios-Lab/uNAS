@@ -18,7 +18,7 @@ class MlpArchitecture(Architecture):
         for dense_layer in self.architecture:
             x = Dense(dense_layer["units"], activation="relu",
                       kernel_regularizer=l2(l2_reg))(x)
-        x = Dense(1 if num_classes == 2 else num_classes)(x)
+        x = Dense(1 if num_classes <= 2 else num_classes)(x)
 
         return Model(inputs=i, outputs=x)
 
@@ -31,7 +31,7 @@ class MlpArchitecture(Architecture):
             x = Input(shape=(batch_size,) + input_shape)
             for dense_layer in self.architecture:
                 x = Dense(dense_layer["units"], preflatten_input=True, activation="relu")(x)
-            x = Dense(1 if num_classes == 2 else num_classes)(x)
+            x = Dense(1 if num_classes <= 2 else num_classes)(x)
             g.add_output(x)
 
         return g

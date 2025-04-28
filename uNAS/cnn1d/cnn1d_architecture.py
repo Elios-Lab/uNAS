@@ -79,7 +79,7 @@ class Cnn1DArchitecture(Architecture):
 
         final_dense = self.architecture.get("_final_dense", {})
         final_dense.update({
-            "units": 1 if num_classes == 2 else num_classes,
+            "units": 1 if num_classes <= 2 else num_classes,
             "activation": None
         })
         x = dense_layer(x, final_dense)

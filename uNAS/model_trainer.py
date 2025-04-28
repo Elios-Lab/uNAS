@@ -62,15 +62,18 @@ class ModelTrainer:
 
             model = tf.keras.Model(inputs=i, outputs=stud_logits)
             model.add_loss(teaching_loss, inputs=True)
-
-        if dataset.num_classes == 2:
-            loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-            accuracy = tf.keras.metrics.BinaryAccuracy(name="accuracy")
+        if dataset.num_classes < 2:#Regression
+            loss = tf.keras.losses.MeanAbsoluteError() 
+            metric = tf.keras.metrics.MeanAbsoluteError(name="mae")
         else:
-            loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-            accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name="accuracy")
+            if dataset.num_classes == 2:
+                loss = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+                metric = tf.keras.metrics.BinaryAccuracy(name="accuracy")
+            else:
+                loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+                metric = tf.keras.metrics.SparseCategoricalAccuracy(name="accuracy")
         model.compile(optimizer=self.config.optimizer,
-                      loss=loss, metrics=[accuracy])
+                      loss=loss, metrics=[metric])
 
         class_weight = {k: v for k, v in enumerate(dataset.class_weight())} \
             if self.config.use_class_weight else None
@@ -97,11 +100,14 @@ class ModelTrainer:
             .prefetch(tf.data.experimental.AUTOTUNE)
         _, test_acc = model.evaluate(test, verbose=0)
 
-        val_error = 1.0 - log.history["val_accuracy"][-1] if self.pruning and self.pruning.finish_pruning_by_epoch >= epochs else 1.0 - max(log.history["val_accuracy"][check_logs_from_epoch:])
-
+        if(dataset.num_classes>=2):
+            val_error = 1.0 - log.history["val_accuracy"][-1] if self.pruning and self.pruning.finish_pruning_by_epoch >= epochs else 1.0 - max(log.history["val_accuracy"][check_logs_from_epoch:])
+        else:
+            val_error = log.history["val_mae"][-1] if self.pruning and self.pruning.finish_pruning_by_epoch >= epochs else min(log.history["val_mae"][check_logs_from_epoch:])
+            
         return {
             "val_error": val_error,
-            "test_error": 1.0 - test_acc,
+            "test_error": 1.0 - test_acc if dataset.num_classes>=2 else test_acc, # classification 1 - test, regression test
             "pruned_weights": pruning_cb.weights if pruning_cb else None
         }
 
