@@ -80,6 +80,10 @@ class TrainingConfig:
     - use_class_weight: bool, optional, Default is False. Compute and use class weights to re-balance the data.
     - pruning: Optional[PruningConfig], optional, Default is None.
     - serialized_dataset: Optional[bool], optional, Default is False.
+    - use_qat: bool, optional, Default is False. When True, wraps the model with
+      ``tfmot.quantization.keras.quantize_model()`` before training so that fake-quantization
+      nodes are inserted and weights/activations are trained aware of INT8 rounding.
+      Cannot be combined with pruning.
     """
     dataset: Dataset
     optimizer: Callable[[], tf.optimizers.Optimizer]
@@ -90,6 +94,7 @@ class TrainingConfig:
     use_class_weight: bool = False  # Compute and use class weights to re-balance the data
     pruning: Optional[PruningConfig] = None
     serialized_dataset: Optional[bool] = False
+    use_qat: bool = False  # Wrap model with fake-quantization nodes before training
 
 
 @dataclass
@@ -135,6 +140,11 @@ class AgingEvoConfig:
     - rounds: int, optional, Default is 2000.
     - max_parallel_evaluations: Optional[int], optional, Default is None.
     - checkpoint_dir: str, optional, Default is "artifacts".
+    - complexity_penalty: float, optional, Default is 0.5.
+        Down-weight probability of complexity-increasing mutations (adding blocks, layers, or
+        residual branches) during evolution.  A value of 0 disables the penalty (uniform
+        sampling).  Higher values make the search strongly prefer simpler architectures.
+        Reasonable range: 0.0 – 2.0.
     """
     search_space: SearchSpace
     population_size: int = 100
@@ -144,6 +154,7 @@ class AgingEvoConfig:
     rounds: int = 2000
     max_parallel_evaluations: Optional[int] = None
     checkpoint_dir: str = "artifacts"
+    complexity_penalty: float = 0.5
 
 
 @dataclass

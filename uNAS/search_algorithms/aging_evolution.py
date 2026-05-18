@@ -239,8 +239,36 @@ class AgingEvoSearch:
         self.log.info(f"In bounds: {sum(within_bounds)} within "
                       f"the last {len(within_bounds)} architectures.")
 
+    def _arch_complexity(self, arch) -> int:
+        """
+        Simple structural complexity score: number of residual branch blocks +
+        total number of convolutional layers across all blocks.
+
+        Used to compute a per-morph weight so that complexity-increasing mutations
+        (adding blocks, adding layers, flipping a block to is_branch=True) are
+        sampled less often than complexity-neutral or complexity-reducing ones.
+        """
+        blocks = arch.architecture.get("conv_blocks", [])
+        return sum(1 for b in blocks if b.get("is_branch", False)) + \
+               sum(len(b.get("layers", [])) for b in blocks)
+
     def evolve(self, point: ArchitecturePoint):
-        arch = np.random.choice(self.config.search_space.produce_morphs(point.arch))
+        morphs = self.config.search_space.produce_morphs(point.arch)
+        penalty = self.config.complexity_penalty
+
+        if penalty > 0:
+            parent_score = self._arch_complexity(point.arch)
+            weights = np.empty(len(morphs), dtype=np.float64)
+            for idx, m in enumerate(morphs):
+                delta = self._arch_complexity(m) - parent_score
+                # Complexity-increasing morphisms (delta > 0) get a reduced weight;
+                # neutral or simplifying morphisms keep weight 1.0.
+                weights[idx] = 1.0 / (1.0 + max(0, delta) * penalty)
+            weights /= weights.sum()
+            arch = morphs[np.random.choice(len(morphs), p=weights)]
+        else:
+            arch = np.random.choice(morphs)
+
         sparsity = None
         if self.pruning:
             incr = np.random.normal(loc=0.0, scale=0.05)

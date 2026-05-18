@@ -2,6 +2,7 @@ import logging
 from typing import Optional
 
 import tensorflow as tf
+import tensorflow_model_optimization as tfmot
 
 from uNAS.config import TrainingConfig
 from uNAS.pruning import DPFPruning
@@ -42,6 +43,9 @@ class ModelTrainer:
         if self.pruning and self.distillation:
             raise NotImplementedError()
 
+        if self.config.use_qat and self.pruning:
+            raise NotImplementedError("QAT and pruning cannot be used simultaneously.")
+
         if self.distillation:
             teacher = tf.keras.models.load_model(self.distillation.distill_from)
             teacher._name = "teacher_"
@@ -62,6 +66,14 @@ class ModelTrainer:
 
             model = tf.keras.Model(inputs=i, outputs=stud_logits)
             model.add_loss(teaching_loss, inputs=True)
+
+        # Wrap with fake-quantization nodes when QAT is requested.
+        # This must happen after the distillation wrapper (if any) is assembled
+        # and before the model is compiled, so that the QAT ops are part of the
+        # graph that is optimised.
+        if self.config.use_qat:
+            model = tfmot.quantization.keras.quantize_model(model)
+
         if dataset.num_classes < 2:#Regression
             loss = tf.keras.losses.MeanAbsoluteError() 
             metric = tf.keras.metrics.MeanAbsoluteError(name="mae")

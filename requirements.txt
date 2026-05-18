@@ -11,3 +11,8 @@ numpy==1.23.5; sys_platform == 'win32'
 #linux related dependencies
 tensorflow[and-cuda]; sys_platform == 'linux'
 numpy; sys_platform == 'linux'
+
+#macOS related dependencies (Apple Silicon MPS acceleration)
+tensorflow; sys_platform == 'darwin'
+tensorflow-metal; sys_platform == 'darwin'
+numpy; sys_platform == 'darwin'

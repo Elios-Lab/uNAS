@@ -31,12 +31,15 @@ def random_conv2d_layer(block_idx, layer_idx):
     return random_conv2d_layer_type(block_idx, layer_idx, layer_type)
 
 
-def random_conv2d_block(block_idx, num_layers=None):
+def random_conv2d_block(block_idx, num_layers=None, branch_prob=0.2):
+    """branch_prob controls how likely a block (after the first) is initialised as a residual
+    branch.  Keeping this well below 0.5 prevents the initial population from being saturated
+    with residual connections that add complexity without proportional accuracy gains."""
     schema = get_schema()
 
     i = block_idx
     block = {
-        "is_branch": False if block_idx == 0 else schema[f"conv{i}-is-branch"].uniform_random_value(),
+        "is_branch": False if block_idx == 0 else (np.random.random_sample() < branch_prob),
         "layers": []
     }
     num_layers = num_layers or schema[f"conv{i}-num-layers"].uniform_random_value()

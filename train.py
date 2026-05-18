@@ -92,13 +92,16 @@ early_stopping_callback = tf.keras.callbacks.EarlyStopping(
     restore_best_weights=True
 )
 
-with tfmot.quantization.keras.quantize_scope():
-    model = tf.keras.models.load_model(model_path)
-    config = model.get_config()
+# Load the pre-trained float32 model produced by the NAS search.
+# quantize_scope() is only required when loading a model that was *already*
+# serialised with QAT layers; a plain float32 model does not need it.
+model = tf.keras.models.load_model(model_path)
 
-    qa_model = keras.Model.from_config(config)
-    qa_model.summary()
-    qa_model.set_weights(model.get_weights())
+# Annotate every layer with fake-quantization nodes so that weights and
+# activations are rounded to INT8 precision during the fine-tuning forward
+# pass.  This is the correct entry-point for post-search QAT fine-tuning.
+qa_model = tfmot.quantization.keras.quantize_model(model)
+qa_model.summary()
 
 
 # Compile the model
