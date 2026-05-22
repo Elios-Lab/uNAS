@@ -1,8 +1,10 @@
 scikit-learn
+scipy
+tqdm
 ray
 dragonfly-opt
 matplotlib
-datasets                 # HuggingFace datasets (mini-imagenet and other HF datasets)
+datasets[tf]             # HuggingFace datasets for mini-imagenet; [tf] avoids pulling torch
 tensorflow-model-optimization
 setuptools<60.0.0
 

@@ -55,7 +55,7 @@ def get_mini_imagenet_setup(
     error_bound: float = 0.60,
     peak_mem_bound: int = 512_000,
     model_size_bound: int = 512_000,
-    mac_bound: int = 5_000_000,
+    mac_bound: int = 15_000_000,
 ):
     """Return the full uNAS setup dictionary for a Mini-ImageNet search."""
     return {
@@ -98,11 +98,11 @@ def get_mini_imagenet_config(
         ),
         optimizer="adam",
         batch_size=batch_size,
-        epochs=30,
+        epochs=100,
         callbacks=lambda: [
             tf.keras.callbacks.EarlyStopping(
                 monitor="val_accuracy",
-                patience=10,
+                patience=20,
                 min_delta=0.001,
                 verbose=1,
                 restore_best_weights=True,
@@ -127,7 +127,7 @@ def get_mini_imagenet_config(
         search_space=Cnn2DSearchSpace(),
         serialized_dataset=True,
         checkpoint_dir="artifacts/mini_imagenet_cnn2d",
-        max_parallel_evaluations=1,
+        max_parallel_evaluations=4,
         rounds=2000,
     )
 
@@ -149,4 +149,5 @@ def get_mini_imagenet_config(
         "search_algorithm": search_algorithm,
         "search_config": search_config,
         "model_saver_config": model_saver_config,
+        "serialized_dataset": True,
     }
