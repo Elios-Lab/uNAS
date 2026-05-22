@@ -26,6 +26,8 @@ For a full description of methodology and experimental results, please see the a
 - Output format is Keras 2 model (`.h5`); `test.py` handles conversion to TFLite INT8.
 - ImageNet dataset support added.
 - `driver.py` now exposes a full CLI — no editing required to switch experiments.
+- `driver.py` can run with no arguments by reading defaults from `params.json` (see `params.example.json`).
+- All `BoundConfig` constraints (`--error-bound`, `--peak-mem-bound`, `--model-size-bound`, `--mac-bound`) are now overridable from the CLI.
 - Complexity penalty in aging evolution reduces residual-heavy architectures that do not improve accuracy.
 - macOS / Apple Silicon MPS GPU acceleration supported via `tensorflow-metal`.
 
@@ -56,11 +58,21 @@ pip install -r requirements.txt
 ### Step 1 — Run the NAS search
 
 ```bash
+# Option A — pass arguments on the command line
 python driver.py -c <config> [options]
+
+# Option B — no arguments: reads all values from params.json
+cp params.example.json params.json   # edit params.json, then:
+python driver.py
 ```
 
 `driver.py` accepts a short config name via `-c` and automatically imports only the selected
 config module. No editing is required.
+
+When called with **no arguments**, `driver.py` reads from `params.json` in the current
+directory (override the path with `--params-file`). CLI flags always take precedence over
+JSON values, so you can store persistent defaults in the file and still override individual
+knobs on the command line.
 
 **Available configs**
 
@@ -78,14 +90,20 @@ config module. No editing is required.
 **Common options**
 
 ```
--c, --config NAME        Experiment to run (required, see table above)
--d, --data-dir PATH      Root data directory (required for imagenet, wakeviz, sr)
+    --params-file JSON   JSON file of default argument values (default: params.json)
+-c, --config NAME        Experiment to run (optional if set in params.json)
+-d, --data-dir PATH      Root data directory (required for imagenet, wakeviz, sr, z24)
 -l, --load-from FILE     Resume from a saved search-state .pickle file
     --save-every N       Checkpoint search state every N evaluations
     --seed INT           Override the global random seed
     --batch-size N       Override the training batch size
     --image-size H W     Override input image resolution (imagenet / wakeviz)
     --num-classes N      Override number of output classes (imagenet)
+
+    --error-bound FLOAT  Max validation error (e.g. 0.3 → top-1 acc ≥ 70 %)
+    --peak-mem-bound N   Peak SRAM bound in bytes (e.g. 524288 for 512 KB)
+    --model-size-bound N Model weight storage bound in bytes
+    --mac-bound N        Multiply-accumulate operations bound
 ```
 
 **Examples**
@@ -94,8 +112,9 @@ config module. No editing is required.
 # ImageNet search at 96×96
 python driver.py -c imagenet -d /data/imagenet
 
-# ImageNet at lower resolution for tighter MCU budgets
-python driver.py -c imagenet -d /data/imagenet --image-size 64 64
+# ImageNet at lower resolution with tighter MCU bounds
+python driver.py -c imagenet -d /data/imagenet --image-size 64 64 \
+  --peak-mem-bound 262144 --model-size-bound 262144
 
 # Resume an interrupted ImageNet search
 python driver.py -c imagenet -d /data/imagenet \
@@ -109,6 +128,10 @@ python driver.py -c sr --batch-size 256
 
 # Quick functionality test with a dummy dataset
 python driver.py -c dummy_2d
+
+# No-argument launch — all values read from params.json
+cp params.example.json params.json  # fill in your values
+python driver.py
 ```
 
 The search saves the best models (`.h5`) and a state checkpoint (`.pickle`) under
@@ -225,13 +248,14 @@ For datasets that cannot fit in RAM (e.g. ImageNet), use lazy loading:
 ### `BoundConfig`
 
 All bounds are soft constraints enforced via the multi-objective fitness function.
+Every field can also be overridden from the CLI without editing any config file.
 
-| Field | Description |
-|---|---|
-| `error_bound` | Maximum acceptable validation error (e.g. `0.3` = 70 % top-1 accuracy) |
-| `peak_mem_bound` | Peak SRAM usage in bytes |
-| `model_size_bound` | Model weight storage in bytes |
-| `mac_bound` | Multiply-accumulate operations |
+| Field | CLI flag | Description |
+|---|---|---|
+| `error_bound` | `--error-bound` | Maximum acceptable validation error (e.g. `0.3` = 70 % top-1 accuracy) |
+| `peak_mem_bound` | `--peak-mem-bound` | Peak SRAM usage in bytes |
+| `model_size_bound` | `--model-size-bound` | Model weight storage in bytes |
+| `mac_bound` | `--mac-bound` | Multiply-accumulate operations |
 
 ---
 

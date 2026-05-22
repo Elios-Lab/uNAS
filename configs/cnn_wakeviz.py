@@ -6,21 +6,34 @@ from uNAS.search_algorithms import AgingEvoSearch, BayesOpt
 from functools import partial
 
 
-def get_wakeviz_setup(input_size = (50,50) , batch_size = 512, serialized=False, fix_seeds = False):
-    
+def get_wakeviz_setup(input_size=(50,50), batch_size=512, data_dir=None,
+                      serialized=False, fix_seeds=False,
+                      error_bound=0.2, peak_mem_bound=250_000,
+                      model_size_bound=500_000, mac_bound=1_000_000):
+    if data_dir is None:
+        raise ValueError(
+            "data_dir is required for the wakeviz config. "
+            "Pass it with -d/--data-dir or set 'data_dir' in params.json."
+        )
     return {
-        'config': get_wakeviz_config(input_size=input_size, batch_size=batch_size, serialized=serialized, fix_seeds=fix_seeds),
+        'config': get_wakeviz_config(input_size=input_size, batch_size=batch_size, data_dir=data_dir,
+                                     serialized=serialized, fix_seeds=fix_seeds,
+                                     error_bound=error_bound, peak_mem_bound=peak_mem_bound,
+                                     model_size_bound=model_size_bound, mac_bound=mac_bound),
         'name': 'wakeviz_cnn_test',
         'load_from': None,
         'save_every': 5,
         'seed': 0
         }
 
-def get_wakeviz_config(input_size = (50,50) , batch_size = 512, serialized=False, fix_seeds = False):
+def get_wakeviz_config(input_size=(50,50), batch_size=512, data_dir=None,
+                       serialized=False, fix_seeds=False,
+                       error_bound=0.2, peak_mem_bound=250_000,
+                       model_size_bound=500_000, mac_bound=1_000_000):
 
     training_config = TrainingConfig(
         dataset=partial(WV_Dataset, 
-                    data_dir='/ssd/wake_vision/',
+                    data_dir=data_dir,
                     batch_size=batch_size,
                     input_shape=input_size, 
                     fix_seeds=fix_seeds),
@@ -44,10 +57,10 @@ def get_wakeviz_config(input_size = (50,50) , batch_size = 512, serialized=False
     )
 
     bound_config = BoundConfig(
-    error_bound = 0.2,
-    peak_mem_bound = 250_000, 
-    model_size_bound = 500_000,
-    mac_bound = 1_000_000
+        error_bound=error_bound,
+        peak_mem_bound=peak_mem_bound,
+        model_size_bound=model_size_bound,
+        mac_bound=mac_bound,
     )
 
     model_saver_config = ModelSaverConfig(

@@ -9,9 +9,11 @@ from uNAS.cnn2d import Cnn2DSearchSpace
 from uNAS.search_algorithms import AgingEvoSearch, BayesOpt
 
 
-def get_dummy_2D_setup():
+def get_dummy_2D_setup(error_bound=0.4, peak_mem_bound=20_000,
+                       model_size_bound=50_000, mac_bound=30_000):
     return {
-        'config': get_dummy_2D_config(),
+        'config': get_dummy_2D_config(error_bound=error_bound, peak_mem_bound=peak_mem_bound,
+                                      model_size_bound=model_size_bound, mac_bound=mac_bound),
         'name': 'dummy_2D_test',
         'load_from': None,
         'save_every': 5,
@@ -19,7 +21,8 @@ def get_dummy_2D_setup():
         }
 
 
-def get_dummy_2D_config():
+def get_dummy_2D_config(error_bound=0.4, peak_mem_bound=20_000,
+                        model_size_bound=50_000, mac_bound=30_000):
     training_config = TrainingConfig(
         dataset = Dummy2D((10,10,1),2,50), 
         optimizer = lambda: tf.optimizers.SGD(learning_rate=0.001, weight_decay=5e-5),
@@ -29,10 +32,10 @@ def get_dummy_2D_config():
     )
 
     bound_config = BoundConfig(
-    error_bound = 0.4,
-    peak_mem_bound = 20000,
-    model_size_bound = 50000,
-    mac_bound = 30000
+        error_bound=error_bound,
+        peak_mem_bound=peak_mem_bound,
+        model_size_bound=model_size_bound,
+        mac_bound=mac_bound,
     )
 
 

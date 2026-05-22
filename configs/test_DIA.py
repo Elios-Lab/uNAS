@@ -5,9 +5,13 @@ from dataset.DIA_dataset import DIA_Dataset
 from uNAS.cnn1d import Cnn1DSearchSpace
 from uNAS.search_algorithms import AgingEvoSearch, BayesOpt
 
-def get_DIA_setup(classes = [0,1]):
+def get_DIA_setup(classes=[0,1],
+                  error_bound=0.2, peak_mem_bound=5_000_000,
+                  model_size_bound=10_000_000, mac_bound=5_000_000):
     return {
-        'config': get_DIA_config(classes=classes),
+        'config': get_DIA_config(classes=classes,
+                                  error_bound=error_bound, peak_mem_bound=peak_mem_bound,
+                                  model_size_bound=model_size_bound, mac_bound=mac_bound),
         'name': 'DIA_Test',
         'load_from': None,
         'save_every': 10,
@@ -15,7 +19,9 @@ def get_DIA_setup(classes = [0,1]):
         }
 
 
-def get_DIA_config(classes = [0,1]):
+def get_DIA_config(classes=[0,1],
+                   error_bound=0.2, peak_mem_bound=5_000_000,
+                   model_size_bound=10_000_000, mac_bound=5_000_000):
     training_config = TrainingConfig(
         dataset = DIA_Dataset(classes = classes), 
         optimizer = lambda: tf.optimizers.Adam(learning_rate=0.0001),
@@ -31,10 +37,10 @@ def get_DIA_config(classes = [0,1]):
     )
 
     bound_config = BoundConfig(
-    error_bound = 0.2,
-    peak_mem_bound = 5000000, 
-    model_size_bound = 10000000,
-    mac_bound = 5000000
+        error_bound=error_bound,
+        peak_mem_bound=peak_mem_bound,
+        model_size_bound=model_size_bound,
+        mac_bound=mac_bound,
     )
 
 

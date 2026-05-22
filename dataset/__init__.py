@@ -11,3 +11,4 @@ from .SR_dataset import SpeechCommandsDataset
 from .HAR_dataset import HAR_Dataset
 
 from .imagenet_dataset import ImageNetDataset
+from .mini_imagenet_dataset import MiniImageNetDataset

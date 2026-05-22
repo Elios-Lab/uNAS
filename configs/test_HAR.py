@@ -6,9 +6,13 @@ from dataset.HAR_dataset import HAR_Dataset
 from uNAS.cnn1d import Cnn1DSearchSpace
 from uNAS.search_algorithms import AgingEvoSearch, BayesOpt
 
-def get_HAR_setup(classes = [0,1,2,3,4,5,6,7,8,9,10,11]):
+def get_HAR_setup(classes=[0,1,2,3,4,5,6,7,8,9,10,11],
+                  error_bound=0.2, peak_mem_bound=5_000_000,
+                  model_size_bound=10_000_000, mac_bound=5_000_000):
     return {
-        'config': get_HAR_config(classes=classes),
+        'config': get_HAR_config(classes=classes,
+                                  error_bound=error_bound, peak_mem_bound=peak_mem_bound,
+                                  model_size_bound=model_size_bound, mac_bound=mac_bound),
         'name': 'HAR_Test',
         'load_from': None,
         'save_every': 10,
@@ -16,7 +20,9 @@ def get_HAR_setup(classes = [0,1,2,3,4,5,6,7,8,9,10,11]):
         }
 
 
-def get_HAR_config(classes = [0,1,2,3,4,5,6,7,8,9,10,11]):
+def get_HAR_config(classes=[0,1,2,3,4,5,6,7,8,9,10,11],
+                   error_bound=0.2, peak_mem_bound=5_000_000,
+                   model_size_bound=10_000_000, mac_bound=5_000_000):
     training_config = TrainingConfig(
         dataset = HAR_Dataset(classes = classes), 
         optimizer = "adam",
@@ -30,10 +36,10 @@ def get_HAR_config(classes = [0,1,2,3,4,5,6,7,8,9,10,11]):
     )
 
     bound_config = BoundConfig(
-    error_bound = 0.2,
-    peak_mem_bound = 5000000, 
-    model_size_bound = 10000000,
-    mac_bound = 5000000
+        error_bound=error_bound,
+        peak_mem_bound=peak_mem_bound,
+        model_size_bound=model_size_bound,
+        mac_bound=mac_bound,
     )
 
 

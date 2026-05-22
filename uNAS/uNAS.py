@@ -154,7 +154,8 @@ class uNAS:
             raise Exception("Name must be a string.")
         
         if setup["load_from"] is not None and not os.path.exists(setup["load_from"]):
-            raise Exception("Search state file to load from is not found.")
+            self._log.warning("Search state file to load from is not found. Starting from scratch.")
+            setup["load_from"] = None
         
         if type(setup["save_every"]) is not int:
             raise Exception("Value for 'save-every' must be an integer.")

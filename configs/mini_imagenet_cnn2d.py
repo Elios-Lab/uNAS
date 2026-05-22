@@ -1,41 +1,24 @@
 """
-ImageNet NAS search configuration for uNAS.
-============================================
+uNAS experiment config for Mini-ImageNet (timm/mini-imagenet on HuggingFace).
+=============================================================================
 
-This configuration searches for efficient 2-D CNN architectures that can
-classify ImageNet images while fitting within microcontroller-grade resource
-budgets.
+100-class subset of ImageNet-1k with 50 k train / 10 k validation / 5 k test
+images at their original resolutions.
 
-Typical MCU deployment targets (adjust to your hardware):
-  - Peak SRAM usage  : ≤ 512 KB
-  - Flash / model size: ≤ 512 KB
-  - MACs              : ≤ 5 M
+The dataset is downloaded automatically from HuggingFace on first use.
+Provide a local cache directory via -d/--data-dir or 'data_dir' in params.json
+to control where it is stored (defaults to ~/.cache/huggingface/datasets).
 
-Because ImageNet is large (~1.2 M training images), the dataset is loaded
-lazily with ``serialized_dataset=True`` so that each Ray worker opens its own
-file handles rather than attempting to pickle TensorFlow dataset objects.
+Usage::
 
-Directory layout expected by ImageNetDataset:
+    # Download to default HF cache and run search
+    python driver.py -c mini_imagenet
 
-    /path/to/imagenet/
-        train/
-            n01440764/
-                ILSVRC2012_train_*.JPEG
-                ...
-            ...
-        val/
-            n01440764/
-                ILSVRC2012_val_*.JPEG
-                ...
-            ...
+    # Use a custom HF cache directory
+    python driver.py -c mini_imagenet -d /data/hf_cache
 
-Usage
------
-Provide the dataset path at runtime::
-
-    python driver.py -c imagenet -d /path/to/imagenet
-
-or set ``data_dir`` in ``params.json``.
+    # Tighten resource constraints for a smaller MCU
+    python driver.py -c mini_imagenet --peak-mem-bound 256000 --model-size-bound 256000
 
 """
 
@@ -51,78 +34,66 @@ from uNAS.config import (
 from uNAS.cnn2d import Cnn2DSearchSpace
 from uNAS.search_algorithms import AgingEvoSearch
 
-from dataset.imagenet_dataset import ImageNetDataset
+from dataset.mini_imagenet_dataset import MiniImageNetDataset
 
 # ---------------------------------------------------------------------------
-# User-configurable parameters – edit these before running a search
+# User-configurable parameters
 # ---------------------------------------------------------------------------
 
-IMAGENET_DIR = None   # set via -d/--data-dir or 'data_dir' in params.json
-IMAGE_SIZE = (96, 96)                # (H, W); use (64, 64) for tighter budgets
+IMAGE_SIZE = (96, 96)   # (H, W); images are resized from their original size
 
 
 # ---------------------------------------------------------------------------
 # Setup helpers
 # ---------------------------------------------------------------------------
 
-def get_imagenet_setup(
+def get_mini_imagenet_setup(
     image_size: tuple = IMAGE_SIZE,
-    data_dir: str = IMAGENET_DIR,
-    batch_size: int = 256,
-    num_classes: int = 1000,
+    data_dir: str = None,
+    batch_size: int = 128,
     fix_seeds: bool = False,
-    error_bound: float = 0.70,
+    error_bound: float = 0.60,
     peak_mem_bound: int = 512_000,
     model_size_bound: int = 512_000,
     mac_bound: int = 5_000_000,
 ):
-    """Return the full uNAS setup dictionary for an ImageNet search."""
-    if data_dir is None:
-        raise ValueError(
-            "data_dir is required for the imagenet config. "
-            "Pass it with -d/--data-dir or set 'data_dir' in params.json."
-        )
+    """Return the full uNAS setup dictionary for a Mini-ImageNet search."""
     return {
-        "config": get_imagenet_config(
+        "config": get_mini_imagenet_config(
             image_size=image_size,
             data_dir=data_dir,
             batch_size=batch_size,
-            num_classes=num_classes,
             fix_seeds=fix_seeds,
             error_bound=error_bound,
             peak_mem_bound=peak_mem_bound,
             model_size_bound=model_size_bound,
             mac_bound=mac_bound,
         ),
-        "name": "imagenet_cnn2d",
+        "name": "mini_imagenet_cnn2d",
         "load_from": None,
         "save_every": 5,
         "seed": 0,
     }
 
 
-def get_imagenet_config(
+def get_mini_imagenet_config(
     image_size: tuple = IMAGE_SIZE,
-    data_dir: str = IMAGENET_DIR,
-    batch_size: int = 256,
-    num_classes: int = 1000,
+    data_dir: str = None,
+    batch_size: int = 128,
     fix_seeds: bool = False,
-    error_bound: float = 0.70,
+    error_bound: float = 0.60,
     peak_mem_bound: int = 512_000,
     model_size_bound: int = 512_000,
     mac_bound: int = 5_000_000,
 ):
-    """Return the uNAS config dictionary for an ImageNet NAS search."""
-
     training_config = TrainingConfig(
         # Use partial() + serialized_dataset=True so each Ray worker
-        # creates its own ImageNetDataset instance (avoids pickling issues
-        # with large tf.data.Dataset objects).
+        # creates its own MiniImageNetDataset instance rather than pickling
+        # a large generator-backed tf.data.Dataset.
         dataset=partial(
-            ImageNetDataset,
-            data_dir=data_dir,
+            MiniImageNetDataset,
             image_size=image_size,
-            num_classes=num_classes,
+            data_dir=data_dir,
             fix_seeds=fix_seeds,
         ),
         optimizer="adam",
@@ -145,9 +116,9 @@ def get_imagenet_config(
             ),
             tf.keras.callbacks.TerminateOnNaN(),
         ],
-        use_class_weight=False,   # ImageNet is roughly balanced
+        use_class_weight=False,   # mini-imagenet is balanced across 100 classes
         serialized_dataset=True,  # lazy per-worker instantiation
-        use_qat=True,                # quantization-aware training 
+        use_qat=True,
     )
 
     search_algorithm = AgingEvoSearch
@@ -155,13 +126,12 @@ def get_imagenet_config(
     search_config = AgingEvoConfig(
         search_space=Cnn2DSearchSpace(),
         serialized_dataset=True,
-        checkpoint_dir="artifacts/imagenet_cnn2d",
+        checkpoint_dir="artifacts/mini_imagenet_cnn2d",
         max_parallel_evaluations=1,
         rounds=2000,
     )
 
     # Resource bounds tuned for a typical Cortex-M MCU with 512 KB SRAM/Flash.
-    # Loosen or tighten depending on your target device.
     bound_config = BoundConfig(
         error_bound=error_bound,
         peak_mem_bound=peak_mem_bound,
@@ -179,5 +149,4 @@ def get_imagenet_config(
         "search_algorithm": search_algorithm,
         "search_config": search_config,
         "model_saver_config": model_saver_config,
-        "serialized_dataset": True,
     }

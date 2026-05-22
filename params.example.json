@@ -1,0 +1,19 @@
+{
+    "_comment": "Copy this file to params.json and fill in your values. Run: python driver.py",
+
+    "config":           "imagenet",
+    "data_dir":         "/path/to/imagenet",
+
+    "seed":             0,
+    "batch_size":       256,
+    "image_size":       [96, 96],
+    "num_classes":      1000,
+
+    "save_every":       5,
+    "load_from":        null,
+
+    "error_bound":      0.70,
+    "peak_mem_bound":   524288,
+    "model_size_bound": 524288,
+    "mac_bound":        5000000
+}

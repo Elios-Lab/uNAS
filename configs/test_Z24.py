@@ -5,9 +5,21 @@ from dataset.Z24_dataset import Z24_Dataset
 from uNAS.cnn1d import Cnn1DSearchSpace
 from uNAS.search_algorithms import AgingEvoSearch, BayesOpt
 
-def get_Z24_setup(classes = ['01', '03', '04', '05', '06'], windows_length=512):
+def get_Z24_setup(classes=['01', '03', '04', '05', '06'], windows_length=512,
+                  data_dir=None,
+                  error_bound=0.3, peak_mem_bound=5_000_000,
+                  model_size_bound=10_000_000, mac_bound=5_000_000):
+    if data_dir is None:
+        raise ValueError(
+            "data_dir is required for the z24 config. "
+            "Pass it with -d/--data-dir or set 'data_dir' in params.json."
+        )
     return {
-        'config': get_Z24_config(classes=classes,windows_length=windows_length),
+        'config': get_Z24_config(classes=classes, windows_length=windows_length,
+                                  data_dir=data_dir, error_bound=error_bound,
+                                  peak_mem_bound=peak_mem_bound,
+                                  model_size_bound=model_size_bound,
+                                  mac_bound=mac_bound),
         'name': 'Z24_Test',
         'load_from': None,
         'save_every': 5,
@@ -15,9 +27,12 @@ def get_Z24_setup(classes = ['01', '03', '04', '05', '06'], windows_length=512):
         }
 
 
-def get_Z24_config(classes = ['01', '03', '04', '05', '06'], windows_length=512):
+def get_Z24_config(classes=['01', '03', '04', '05', '06'], windows_length=512,
+                   data_dir=None,
+                   error_bound=0.3, peak_mem_bound=5_000_000,
+                   model_size_bound=10_000_000, mac_bound=5_000_000):
     training_config = TrainingConfig(
-        dataset = Z24_Dataset(classes = classes, windows_length=windows_length, path= rf'/mnt/c/Users/Matteo/Desktop/Dottorato/BridgeZ24_1/DatasetPDT', fix_seeds = True), #  windows_length=8192,
+        dataset = Z24_Dataset(classes = classes, windows_length=windows_length, path=data_dir, fix_seeds = True), #  windows_length=8192,
         optimizer = lambda: tf.optimizers.Adam(learning_rate=0.0005),
         callbacks = lambda: [
                             tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=25, verbose=1, min_lr=0.000001),  
@@ -31,10 +46,10 @@ def get_Z24_config(classes = ['01', '03', '04', '05', '06'], windows_length=512)
     )
 
     bound_config = BoundConfig(
-    error_bound = 0.3,
-    peak_mem_bound = 5000000, 
-    model_size_bound = 10000000,
-    mac_bound = 5000000
+        error_bound=error_bound,
+        peak_mem_bound=peak_mem_bound,
+        model_size_bound=model_size_bound,
+        mac_bound=mac_bound,
     )
 
 

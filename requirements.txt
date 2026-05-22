@@ -2,6 +2,8 @@ scikit-learn
 ray
 dragonfly-opt
 matplotlib
+datasets                 # HuggingFace datasets (mini-imagenet and other HF datasets)
+tensorflow-model-optimization
 setuptools<60.0.0
 
 #windows related dependencies
